@@ -451,8 +451,8 @@
             <h2 class="modal-title">登录</h2>
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label class="form-label">用户名</label>
-                    <input type="text" class="form-input" id="loginUsername" required>
+                    <label class="form-label">邮箱</label>
+                    <input type="email" class="form-input" id="loginUsername" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">密码</label>
@@ -473,11 +473,11 @@
             <h2 class="modal-title">注册</h2>
             <form id="registerForm" onsubmit="handleRegister(event)">
                 <div class="form-group">
-                    <label class="form-label">用户名</label>
-                    <input type="text" class="form-input" id="registerUsername" required minlength="3">
+                    <label class="form-label">邮箱</label>
+                    <input type="email" class="form-input" id="registerUsername" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">密码</label>
+                    <label class="form-label">密码（至少6位）</label>
                     <input type="password" class="form-input" id="registerPassword" required minlength="6">
                 </div>
                 <div class="form-group">
@@ -510,14 +510,21 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const API_KEY = 'sk-dd0415392eba4dd1856f2b29560b0035';
         const chatContainer = document.getElementById('chatContainer');
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
 
+        // Supabase 配置
+        const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         // 用户数据管理
         let currentUser = null;
+        let userQuota = null;
         let conversationHistory = [];
 
         // 系统提示词
@@ -534,26 +541,57 @@
 记住：这只是娱乐，要给用户带来趣味性的体验。`;
 
         // 初始化
-        function init() {
-            const savedUser = localStorage.getItem('currentUser');
-            if (savedUser) {
-                currentUser = JSON.parse(savedUser);
+        async function init() {
+            // 检查是否有登录会话
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if (session) {
+                currentUser = session.user;
+                await loadUserQuota();
                 showUserInfo();
             } else {
                 showLoginModal();
             }
+
+            // 监听认证状态变化
+            supabase.auth.onAuthStateChange(async (event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    currentUser = session.user;
+                    await loadUserQuota();
+                    showUserInfo();
+                } else if (event === 'SIGNED_OUT') {
+                    currentUser = null;
+                    userQuota = null;
+                }
+            });
+        }
+
+        // 加载用户配额
+        async function loadUserQuota() {
+            const { data, error } = await supabase
+                .from('user_quotas')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single();
+
+            if (error) {
+                console.error('加载配额失败:', error);
+                return;
+            }
+
+            userQuota = data;
         }
 
         // 显示用户信息
         function showUserInfo() {
             document.getElementById('userInfo').style.display = 'flex';
-            document.getElementById('username').textContent = currentUser.username;
+            document.getElementById('username').textContent = currentUser.email.split('@')[0];
             updateQuotaBadge();
         }
 
         // 更新剩余次数显示
         function updateQuotaBadge() {
-            const quota = currentUser.quota || 0;
+            const quota = userQuota ? userQuota.quota : 0;
             document.getElementById('quotaBadge').textContent = `剩余次数: ${quota}`;
         }
 
@@ -572,33 +610,33 @@
         }
 
         // 处理登录
-        function handleLogin(event) {
+        async function handleLogin(event) {
             event.preventDefault();
-            const username = document.getElementById('loginUsername').value;
+            const email = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
 
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-            if (!users[username]) {
-                document.getElementById('loginError').textContent = '用户不存在';
+            if (error) {
+                document.getElementById('loginError').textContent = error.message === 'Invalid login credentials'
+                    ? '邮箱或密码错误'
+                    : error.message;
                 return;
             }
 
-            if (users[username].password !== password) {
-                document.getElementById('loginError').textContent = '密码错误';
-                return;
-            }
-
-            currentUser = users[username];
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            currentUser = data.user;
+            await loadUserQuota();
             document.getElementById('loginModal').classList.remove('active');
             showUserInfo();
         }
 
         // 处理注册
-        function handleRegister(event) {
+        async function handleRegister(event) {
             event.preventDefault();
-            const username = document.getElementById('registerUsername').value;
+            const email = document.getElementById('registerUsername').value;
             const password = document.getElementById('registerPassword').value;
             const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
 
@@ -607,32 +645,28 @@
                 return;
             }
 
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password
+            });
 
-            if (users[username]) {
-                document.getElementById('registerError').textContent = '用户名已存在';
+            if (error) {
+                document.getElementById('registerError').textContent = error.message;
                 return;
             }
 
-            users[username] = {
-                username: username,
-                password: password,
-                quota: 2, // 初始2次免费
-                createdAt: new Date().toISOString()
-            };
-
-            localStorage.setItem('users', JSON.stringify(users));
-            currentUser = users[username];
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-
+            // Supabase 会自动通过触发器创建 user_quotas 记录
+            currentUser = data.user;
+            await loadUserQuota();
             document.getElementById('registerModal').classList.remove('active');
             showUserInfo();
         }
 
         // 退出登录
-        function logout() {
-            localStorage.removeItem('currentUser');
+        async function logout() {
+            await supabase.auth.signOut();
             currentUser = null;
+            userQuota = null;
             conversationHistory = [];
             document.getElementById('userInfo').style.display = 'none';
             chatContainer.innerHTML = `
@@ -655,26 +689,48 @@
         }
 
         // 处理支付（模拟）
-        function handlePayment() {
+        async function handlePayment() {
             // 模拟支付成功
             alert('支付成功！（模拟）\n实际使用时需要接入真实支付接口');
 
             // 增加5次对话次数
-            currentUser.quota += 5;
+            const newQuota = userQuota.quota + 5;
 
-            // 更新本地存储
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            users[currentUser.username] = currentUser;
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            const { error: updateError } = await supabase
+                .from('user_quotas')
+                .update({
+                    quota: newQuota,
+                    total_purchased: userQuota.total_purchased + 5,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', currentUser.id);
 
+            if (updateError) {
+                console.error('更新配额失败:', updateError);
+                alert('支付失败，请稍后重试');
+                return;
+            }
+
+            // 记录支付记录
+            await supabase
+                .from('payment_records')
+                .insert({
+                    user_id: currentUser.id,
+                    amount: 4.99,
+                    quota_added: 5,
+                    payment_method: 'mock',
+                    status: 'completed'
+                });
+
+            // 重新加载配额
+            await loadUserQuota();
             updateQuotaBadge();
             closePaymentModal();
         }
 
         // 检查是否有剩余次数
         function checkQuota() {
-            if (currentUser.quota <= 0) {
+            if (!userQuota || userQuota.quota <= 0) {
                 showPaymentModal();
                 return false;
             }
@@ -682,14 +738,23 @@
         }
 
         // 扣除次数
-        function deductQuota() {
-            currentUser.quota--;
+        async function deductQuota() {
+            const newQuota = userQuota.quota - 1;
 
-            const users = JSON.parse(localStorage.getItem('users') || '{}');
-            users[currentUser.username] = currentUser;
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            const { error } = await supabase
+                .from('user_quotas')
+                .update({
+                    quota: newQuota,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', currentUser.id);
 
+            if (error) {
+                console.error('扣除配额失败:', error);
+                return;
+            }
+
+            userQuota.quota = newQuota;
             updateQuotaBadge();
         }
 
