@@ -799,11 +799,32 @@
                 .single();
 
             if (error) {
-                console.error('加载配额失败:', error);
-                return;
-            }
+                // 如果查询出错（可能是没有记录），自动创建一个
+                if (error.code === 'PGRST116') {
+                    console.log('用户配额不存在，正在创建...');
+                    const { data: newQuota, error: insertError } = await supabase
+                        .from('user_quotas')
+                        .insert({
+                            user_id: currentUser.id,
+                            quota: 2,
+                            total_purchased: 0
+                        })
+                        .select()
+                        .single();
 
-            userQuota = data;
+                    if (insertError) {
+                        console.error('创建配额失败:', insertError);
+                        return;
+                    }
+
+                    userQuota = newQuota;
+                } else {
+                    console.error('加载配额失败:', error);
+                    return;
+                }
+            } else {
+                userQuota = data;
+            }
         }
 
         // 显示用户信息
