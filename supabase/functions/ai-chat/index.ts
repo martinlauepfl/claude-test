@@ -33,7 +33,7 @@ serve(async (req) => {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'qwen-turbo',  // 使用更快的模型
+        model: 'qwen-max',  // 使用质量最高的模型
         messages: messages,
         stream: true  // 启用流式输出
       })
