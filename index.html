@@ -922,10 +922,20 @@
                 return;
             }
 
-            // 否则根据IP检测地理位置
+            // 先尝试从浏览器语言判断
+            const browserLang = navigator.language || navigator.userLanguage;
+            const isChinese = browserLang.toLowerCase().startsWith('zh');
+
+            // 尝试IP检测（3秒超时）
             try {
-                // 使用免费的IP地理位置API
-                const response = await fetch('https://ipapi.co/json/');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+                const response = await fetch('https://ipapi.co/json/', {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+
                 const data = await response.json();
 
                 // 如果是中国IP，使用中文；否则使用英文
@@ -937,9 +947,9 @@
 
                 console.log('Detected country:', data.country_name, '- Language:', currentLanguage);
             } catch (error) {
-                // 如果IP检测失败，默认使用英文（国际化优先）
-                console.error('IP detection failed, defaulting to English:', error);
-                currentLanguage = 'en';
+                // IP检测失败时，根据浏览器语言判断，默认中文
+                console.log('IP detection failed, using browser language:', browserLang);
+                currentLanguage = isChinese ? 'zh' : 'zh'; // 默认中文，更符合目标用户
             }
         }
 
