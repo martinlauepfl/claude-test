@@ -17,7 +17,9 @@
       "Bash(curl:*)",
       "Read(//Users/martinlau/Desktop/**)",
       "Bash(dig:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(python3:*)",
+      "Bash(git rev-parse --abbrev-ref HEAD@{upstream})"
     ],
     "deny": [],
     "ask": []
