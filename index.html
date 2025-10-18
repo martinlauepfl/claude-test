@@ -822,6 +822,7 @@
             if (session) {
                 currentUser = session.user;
                 await loadUserQuota();
+                await loadChatHistory();
                 showUserInfo();
             } else {
                 showLoginModal();
@@ -832,12 +833,93 @@
                 if (event === 'SIGNED_IN' && session) {
                     currentUser = session.user;
                     await loadUserQuota();
+                    await loadChatHistory();
                     showUserInfo();
                 } else if (event === 'SIGNED_OUT') {
                     currentUser = null;
                     userQuota = null;
+                    conversationHistory = [];
+                    clearChatDisplay();
                 }
             });
+        }
+
+        // 加载聊天历史
+        async function loadChatHistory() {
+            if (!currentUser) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('chat_messages')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: true })
+                    .limit(50); // 只加载最近50条
+
+                if (error) {
+                    console.error('加载聊天历史失败:', error);
+                    return;
+                }
+
+                if (data && data.length > 0) {
+                    // 移除欢迎消息
+                    const welcomeMessage = chatContainer.querySelector('.welcome-message');
+                    if (welcomeMessage) {
+                        welcomeMessage.remove();
+                    }
+
+                    // 显示历史消息
+                    data.forEach(msg => {
+                        if (msg.role !== 'system') {
+                            addMessage(msg.content, msg.role);
+                            if (msg.role !== 'system') {
+                                conversationHistory.push({
+                                    role: msg.role,
+                                    content: msg.content
+                                });
+                            }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('加载聊天历史异常:', error);
+            }
+        }
+
+        // 保存消息到数据库
+        async function saveChatMessage(role, content) {
+            if (!currentUser) return;
+
+            try {
+                const { error } = await supabase
+                    .from('chat_messages')
+                    .insert({
+                        user_id: currentUser.id,
+                        role: role,
+                        content: content
+                    });
+
+                if (error) {
+                    console.error('保存消息失败:', error);
+                }
+            } catch (error) {
+                console.error('保存消息异常:', error);
+            }
+        }
+
+        // 清空聊天显示
+        function clearChatDisplay() {
+            chatContainer.innerHTML = `
+                <div id="verificationBanner" class="verification-banner" style="display: none;">
+                    <strong>⚠️ 请验证您的邮箱</strong><br>
+                    我们已向您的邮箱发送了验证链接，请查收并点击链接完成验证。
+                    <a class="resend-link" onclick="resendVerificationEmail()">重新发送</a>
+                </div>
+                <div class="welcome-message">
+                    <h2>命运如何，且让我为你测算</h2>
+                    <p>周易八卦，紫微斗数，占往知来</p>
+                </div>
+            `;
         }
 
         // 加载用户配额
@@ -1107,6 +1189,9 @@
                 content: message
             });
 
+            // 保存用户消息到数据库
+            saveChatMessage('user', message);
+
             // 添加用户消息
             addMessage(message, 'user');
             userInput.value = '';
@@ -1137,6 +1222,9 @@
                     content: response
                 });
 
+                // 保存 AI 回复到数据库
+                saveChatMessage('assistant', response);
+
                 // 只有成功获得回复才扣除次数
                 await deductQuota();
             } catch (error) {
@@ -1149,7 +1237,7 @@
                 });
                 addMessage(errorMsg, 'assistant');
                 console.error('API调用失败:', error);
-                // 注意：失败时不扣除次数
+                // 注意：失败时不扣除次数，也不保存到数据库
             }
 
             // 启用输入
