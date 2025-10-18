@@ -670,6 +670,7 @@
         <div class="user-info" id="userInfo" style="display: none;">
             <span id="username"></span>
             <span class="quota-badge" id="quotaBadge">剩余次数: 2</span>
+            <button class="logout-btn" onclick="clearAllHistory()">清空记录</button>
             <button class="logout-btn" onclick="logout()">退出</button>
         </div>
     </div>
@@ -1055,6 +1056,37 @@
                 document.getElementById('registerError').className = 'error-message';
                 document.getElementById('registerError').textContent = '';
             }, 3000);
+        }
+
+        // 清空所有聊天记录
+        async function clearAllHistory() {
+            if (!currentUser) return;
+
+            const confirmed = confirm('确定要清空所有聊天记录吗？此操作不可恢复！');
+            if (!confirmed) return;
+
+            try {
+                // 从数据库删除所有聊天记录
+                const { error } = await supabase
+                    .from('chat_messages')
+                    .delete()
+                    .eq('user_id', currentUser.id);
+
+                if (error) {
+                    console.error('清空记录失败:', error);
+                    alert('清空记录失败，请稍后重试');
+                    return;
+                }
+
+                // 清空本地聊天历史
+                conversationHistory = [];
+                clearChatDisplay();
+
+                alert('聊天记录已清空！');
+            } catch (error) {
+                console.error('清空记录异常:', error);
+                alert('清空记录失败，请稍后重试');
+            }
         }
 
         // 退出登录
