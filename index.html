@@ -806,7 +806,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Stripe 配置
+        // Stripe 配置（生产模式）
         const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SJTJ8PCdo22g31uLFcc8RAq7C3K11KpQGC8V9ktNQHydPpxMgCdAwb9uBK3QiKeW1bwo2TuIGYPYMlkZKfTOsh900PhhrrubA';
         const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
