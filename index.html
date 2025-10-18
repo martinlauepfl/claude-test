@@ -804,7 +804,13 @@
         // Supabase 配置 (anon key 可以安全地暴露在前端)
         const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+            auth: {
+                autoRefreshToken: true,
+                persistSession: true,
+                detectSessionInUrl: true
+            }
+        });
 
         // Stripe 配置（生产模式）
         const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SJTJ8PCdo22g31uLFcc8RAq7C3K11KpQGC8V9ktNQHydPpxMgCdAwb9uBK3QiKeW1bwo2TuIGYPYMlkZKfTOsh900PhhrrubA';
@@ -1073,16 +1079,36 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
 
-            // 检查是否有登录会话
-            const { data: { session } } = await supabase.auth.getSession();
+            // 检查是否有登录会话,并验证会话有效性
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
 
-            if (session) {
-                currentUser = session.user;
-                await loadUserQuota();
-                await loadChatHistory();
-                showUserInfo();
+                if (error) {
+                    console.error('获取会话失败:', error);
+                    // 清除可能损坏的会话
+                    await supabase.auth.signOut();
+                    showLoginModal();
+                    return;
+                }
 
-                // 处理支付结果
+                if (session) {
+                    currentUser = session.user;
+                    await loadUserQuota();
+                    await loadChatHistory();
+                    showUserInfo();
+                } else {
+                    showLoginModal();
+                }
+            } catch (err) {
+                console.error('初始化会话时出错:', err);
+                // 清除可能的缓存问题
+                await supabase.auth.signOut();
+                showLoginModal();
+                return;
+            }
+
+            // 继续处理支付回调
+            if (currentUser && paymentStatus) {
                 if (paymentStatus === 'success') {
                     // 支付成功，刷新配额
                     await loadUserQuota();
@@ -1095,8 +1121,6 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
                     // 清除 URL 参数
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
-            } else {
-                showLoginModal();
             }
 
             // 监听认证状态变化
@@ -1268,26 +1292,36 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
             const email = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
-            });
+            try {
+                // 清除旧的缓存会话
+                await supabase.auth.signOut();
 
-            if (error) {
-                if (error.message === 'Invalid login credentials') {
-                    document.getElementById('loginError').textContent = t('errorCredentials');
-                } else if (error.message === 'Email not confirmed') {
-                    document.getElementById('loginError').textContent = t('errorEmailNotConfirmed');
-                } else {
-                    document.getElementById('loginError').textContent = error.message;
+                // 执行新的登录
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) {
+                    if (error.message === 'Invalid login credentials') {
+                        document.getElementById('loginError').textContent = t('errorCredentials');
+                    } else if (error.message === 'Email not confirmed') {
+                        document.getElementById('loginError').textContent = t('errorEmailNotConfirmed');
+                    } else {
+                        document.getElementById('loginError').textContent = error.message;
+                    }
+                    return;
                 }
-                return;
-            }
 
-            currentUser = data.user;
-            await loadUserQuota();
-            document.getElementById('loginModal').classList.remove('active');
-            showUserInfo();
+                currentUser = data.user;
+                await loadUserQuota();
+                await loadChatHistory();
+                document.getElementById('loginModal').classList.remove('active');
+                showUserInfo();
+            } catch (err) {
+                console.error('登录过程出错:', err);
+                document.getElementById('loginError').textContent = t('apiError');
+            }
         }
 
         // 处理注册
