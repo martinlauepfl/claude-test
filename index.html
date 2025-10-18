@@ -759,7 +759,7 @@
             <div class="payment-price">
                 <small>¥</small>4.99
             </div>
-            <p class="payment-desc">解锁 5 次对话</p>
+            <p class="payment-desc">解锁 50 次对话</p>
             <button class="btn-primary" onclick="handlePayment()">立即支付（模拟）</button>
             <div class="payment-buttons">
                 <button class="btn-secondary" onclick="closePaymentModal()">取消</button>
@@ -1125,14 +1125,14 @@
             // 模拟支付成功
             alert('支付成功！（模拟）\n实际使用时需要接入真实支付接口');
 
-            // 增加5次对话次数
-            const newQuota = userQuota.quota + 5;
+            // 增加50次对话次数
+            const newQuota = userQuota.quota + 50;
 
             const { error: updateError } = await supabase
                 .from('user_quotas')
                 .update({
                     quota: newQuota,
-                    total_purchased: userQuota.total_purchased + 5,
+                    total_purchased: userQuota.total_purchased + 50,
                     updated_at: new Date().toISOString()
                 })
                 .eq('user_id', currentUser.id);
@@ -1149,7 +1149,7 @@
                 .insert({
                     user_id: currentUser.id,
                     amount: 4.99,
-                    quota_added: 5,
+                    quota_added: 50,
                     payment_method: 'mock',
                     status: 'completed'
                 });
