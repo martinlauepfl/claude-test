@@ -19,7 +19,8 @@
       "Bash(dig:*)",
       "Bash(git pull:*)",
       "Bash(python3:*)",
-      "Bash(git rev-parse --abbrev-ref HEAD@{upstream})"
+      "Bash(git rev-parse --abbrev-ref HEAD@{upstream})",
+      "Bash(git log --all --full-history --source --oneline -- '*key*' '*secret*' '*.env*' '*config*' '*api*')"
     ],
     "deny": [],
     "ask": []
