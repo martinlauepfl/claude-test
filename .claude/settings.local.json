@@ -12,7 +12,12 @@
       "Bash(sudo chown:*)",
       "Bash(git remote add:*)",
       "Bash(git branch:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(gh repo view:*)",
+      "Bash(curl:*)",
+      "Read(//Users/martinlau/Desktop/**)",
+      "Bash(dig:*)",
+      "Bash(git pull:*)"
     ],
     "deny": [],
     "ask": []
