@@ -1,5 +1,5 @@
 // Supabase Edge Function
-// 用于安全地调用阿里云 API
+// 用于安全地调用阿里云 API（支持流式输出）
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
@@ -15,7 +15,7 @@ serve(async (req) => {
   }
 
   try {
-    // 从环境变量获取 API Key（这个会在 Supabase 后台设置）
+    // 从环境变量获取 API Key
     const API_KEY = Deno.env.get('ALIBABA_API_KEY')
 
     if (!API_KEY) {
@@ -25,7 +25,7 @@ serve(async (req) => {
     // 获取请求数据
     const { messages } = await req.json()
 
-    // 调用阿里云百炼 API
+    // 调用阿里云百炼 API（启用流式输出）
     const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -33,23 +33,21 @@ serve(async (req) => {
         'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify({
-        model: 'qwen-plus',
-        messages: messages
+        model: 'qwen-turbo',  // 使用更快的模型
+        messages: messages,
+        stream: true  // 启用流式输出
       })
     })
 
-    const data = await response.json()
-
-    // 返回结果
-    return new Response(
-      JSON.stringify(data),
-      {
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+    // 直接返回流式响应
+    return new Response(response.body, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
       }
-    )
+    })
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),

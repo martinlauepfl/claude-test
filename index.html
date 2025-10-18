@@ -1087,7 +1087,7 @@
             this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
 
-        // 发送消息
+        // 发送消息（支持流式显示）
         async function sendMessage() {
             if (!currentUser) {
                 showLoginModal();
@@ -1116,26 +1116,31 @@
             sendButton.disabled = true;
             userInput.disabled = true;
 
-            // 显示加载动画
-            const loadingId = addLoadingMessage();
+            // 移除欢迎消息
+            const welcomeMessage = chatContainer.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            // 创建 AI 消息容器
+            const aiMessageDiv = createStreamingMessage();
 
             try {
-                // 调用阿里云百炼API
-                const response = await callAPI();
-                removeMessage(loadingId);
+                // 调用 API 并实时更新内容
+                const response = await callAPI((chunk) => {
+                    updateStreamingMessage(aiMessageDiv, chunk);
+                });
 
-                // 添加AI回复到历史
+                // 添加 AI 回复到历史
                 conversationHistory.push({
                     role: 'assistant',
                     content: response
                 });
 
-                addMessage(response, 'assistant');
-
                 // 扣除次数
                 deductQuota();
             } catch (error) {
-                removeMessage(loadingId);
+                removeStreamingMessage(aiMessageDiv);
                 const errorMsg = '抱歉，天机不可泄露太多，请稍后再试...';
                 conversationHistory.push({
                     role: 'assistant',
@@ -1151,8 +1156,8 @@
             userInput.focus();
         }
 
-        // 调用 Supabase Edge Function（保护阿里云 API Key）
-        async function callAPI() {
+        // 调用 Supabase Edge Function（保护阿里云 API Key）- 支持流式输出
+        async function callAPI(onChunk) {
             const messages = [
                 {
                     role: 'system',
@@ -1174,11 +1179,95 @@
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error:', errorText);
                 throw new Error('API请求失败');
             }
 
-            const data = await response.json();
-            return data.choices[0].message.content;
+            // 检查响应类型
+            const contentType = response.headers.get('content-type');
+
+            if (contentType && contentType.includes('text/event-stream')) {
+                // 处理流式响应
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullContent = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+
+                            try {
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices[0]?.delta?.content || '';
+                                if (content) {
+                                    fullContent += content;
+                                    onChunk(content);
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+
+                return fullContent;
+            } else {
+                // 处理普通 JSON 响应（兼容旧版 Edge Function）
+                const data = await response.json();
+                const content = data.choices[0].message.content;
+
+                // 模拟流式输出效果
+                for (let i = 0; i < content.length; i++) {
+                    onChunk(content[i]);
+                    await new Promise(resolve => setTimeout(resolve, 20));
+                }
+
+                return content;
+            }
+        }
+
+        // 创建流式消息容器
+        function createStreamingMessage() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar assistant';
+            avatar.textContent = '🔮';
+
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
+            messageContent.dataset.rawContent = '';
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            chatContainer.appendChild(messageDiv);
+
+            return messageDiv;
+        }
+
+        // 更新流式消息内容
+        function updateStreamingMessage(messageDiv, chunk) {
+            const messageContent = messageDiv.querySelector('.message-content');
+            messageContent.dataset.rawContent += chunk;
+            messageContent.textContent = messageContent.dataset.rawContent;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 移除流式消息
+        function removeStreamingMessage(messageDiv) {
+            if (messageDiv && messageDiv.parentNode) {
+                messageDiv.remove();
+            }
         }
 
         // 添加消息到聊天界面
