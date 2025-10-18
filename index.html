@@ -666,7 +666,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>💫 倾诉树洞</h1>
+        <h1>🔮 玄机阁</h1>
         <div class="user-info" id="userInfo" style="display: none;">
             <span id="username"></span>
             <span class="quota-badge" id="quotaBadge">剩余次数: 2</span>
@@ -681,8 +681,8 @@
             <a class="resend-link" onclick="resendVerificationEmail()">重新发送</a>
         </div>
         <div class="welcome-message">
-            <h2>有什么想聊的吗</h2>
-            <p>我会一直在这里陪你，倾听你的故事</p>
+            <h2>命运如何，且让我为你测算</h2>
+            <p>周易八卦，紫微斗数，占往知来</p>
         </div>
     </div>
 
@@ -691,7 +691,7 @@
             <textarea
                 class="input-box"
                 id="userInput"
-                placeholder="说说看，有什么想聊的吗..."
+                placeholder="说说你的困惑，我为你指点迷津..."
                 rows="1"
             ></textarea>
             <button class="send-button" id="sendButton">
@@ -875,7 +875,7 @@
         // 更新剩余次数显示
         function updateQuotaBadge() {
             const quota = userQuota ? userQuota.quota : 0;
-            document.getElementById('quotaBadge').textContent = `今日可倾诉: ${quota}次`;
+            document.getElementById('quotaBadge').textContent = `剩余卦象: ${quota}`;
         }
 
         // 显示登录模态框
@@ -976,8 +976,8 @@
                     <a class="resend-link" onclick="resendVerificationEmail()">重新发送</a>
                 </div>
                 <div class="welcome-message">
-                    <h2>夜深了，有什么想聊的吗</h2>
-                    <p>我会一直在这里陪你，倾听你的故事</p>
+                    <h2>命运如何，且让我为你测算</h2>
+                    <p>周易八卦，紫微斗数，占往知来</p>
                 </div>
             `;
             showLoginModal();
