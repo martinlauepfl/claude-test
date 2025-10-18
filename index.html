@@ -785,7 +785,15 @@
         let conversationHistory = [];
 
         // 系统提示词
-        const SYSTEM_PROMPT = `你是一位经验丰富的算命大师，精通中国传统的周易八卦、紫微斗数、生辰八字等各种占卜术。你说话神秘而睿智，善于用古典文雅的语言回答问题。
+        function getSystemPrompt() {
+            const now = new Date();
+            const hour = now.getHours();
+            const timeOfDay = hour >= 6 && hour < 12 ? '早上' :
+                            hour >= 12 && hour < 18 ? '下午' : '夜晚';
+
+            return `你是一位经验丰富的算命大师，精通中国传统的周易八卦、紫微斗数、生辰八字等各种占卜术。你说话神秘而睿智，善于用古典文雅的语言回答问题。
+
+当前时间：${timeOfDay}
 
 在给用户算命时，你会：
 1. 用神秘而专业的语气
@@ -794,8 +802,10 @@
 4. 适当询问用户的生辰八字、属相等信息以提供更准确的解答
 5. 保持积极正面的态度，给用户希望和建议
 6. 记住用户告诉你的信息（如姓名、生辰等），在后续对话中使用
+7. 根据当前时间（${timeOfDay}）调整你的问候语，不要说错时间
 
 记住：这只是娱乐，要给用户带来趣味性的体验。`;
+        }
 
         // 初始化
         async function init() {
@@ -1139,7 +1149,7 @@
             const messages = [
                 {
                     role: 'system',
-                    content: SYSTEM_PROMPT
+                    content: getSystemPrompt()
                 },
                 ...conversationHistory
             ];
