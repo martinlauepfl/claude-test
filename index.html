@@ -915,13 +915,9 @@
             }
 
             currentUser = data.user;
-
-            // 先关闭登录框和显示界面，然后异步加载配额
+            await loadUserQuota();
             document.getElementById('loginModal').classList.remove('active');
             showUserInfo();
-
-            // 异步加载配额，不阻塞界面
-            loadUserQuota().catch(err => console.error('加载配额失败:', err));
         }
 
         // 处理注册
@@ -1035,13 +1031,7 @@
 
         // 检查是否有剩余次数
         function checkQuota() {
-            // 临时跳过配额检查，直到配额查询问题解决
-            if (!userQuota) {
-                console.warn('配额数据未加载，暂时允许使用');
-                return true;
-            }
-
-            if (userQuota.quota <= 0) {
+            if (!userQuota || userQuota.quota <= 0) {
                 showPaymentModal();
                 return false;
             }
@@ -1051,7 +1041,7 @@
         // 扣除次数
         async function deductQuota() {
             if (!userQuota) {
-                console.warn('配额数据未加载，跳过扣除');
+                console.error('配额数据未加载');
                 return;
             }
 
