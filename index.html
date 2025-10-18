@@ -1137,9 +1137,10 @@
                     content: response
                 });
 
-                // 扣除次数
-                deductQuota();
+                // 只有成功获得回复才扣除次数
+                await deductQuota();
             } catch (error) {
+                // API 调用失败，移除消息容器并显示错误
                 removeStreamingMessage(aiMessageDiv);
                 const errorMsg = '抱歉，天机不可泄露太多，请稍后再试...';
                 conversationHistory.push({
@@ -1148,6 +1149,7 @@
                 });
                 addMessage(errorMsg, 'assistant');
                 console.error('API调用失败:', error);
+                // 注意：失败时不扣除次数
             }
 
             // 启用输入
