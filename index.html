@@ -809,7 +809,7 @@
         let currentUser = null;
         let userQuota = null;
         let conversationHistory = [];
-        let currentLanguage = localStorage.getItem('language') || 'zh';
+        let currentLanguage = localStorage.getItem('language') || null; // 先设为null，等待IP检测
 
         // 多语言配置
         const i18n = {
@@ -904,6 +904,36 @@
         // 获取当前语言的文本
         function t(key) {
             return i18n[currentLanguage][key] || key;
+        }
+
+        // 检测用户IP并设置默认语言
+        async function detectUserLanguage() {
+            // 如果用户已经手动选择过语言，使用保存的语言
+            const savedLanguage = localStorage.getItem('language');
+            if (savedLanguage) {
+                currentLanguage = savedLanguage;
+                return;
+            }
+
+            // 否则根据IP检测地理位置
+            try {
+                // 使用免费的IP地理位置API
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+
+                // 如果是中国IP，使用中文；否则使用英文
+                if (data.country_code === 'CN') {
+                    currentLanguage = 'zh';
+                } else {
+                    currentLanguage = 'en';
+                }
+
+                console.log('Detected country:', data.country_name, '- Language:', currentLanguage);
+            } catch (error) {
+                // 如果IP检测失败，默认使用英文（国际化优先）
+                console.error('IP detection failed, defaulting to English:', error);
+                currentLanguage = 'en';
+            }
         }
 
         // 切换语言
@@ -1015,6 +1045,9 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
 
         // 初始化
         async function init() {
+            // 先检测用户语言（基于IP或localStorage）
+            await detectUserLanguage();
+
             // 初始化语言设置
             updateUILanguage();
 
