@@ -99,7 +99,7 @@
         }
 
         .message-content em {
-            font-style: italic;
+            font-style: normal;
         }
 
         .message-content ul, .message-content ol {
@@ -269,6 +269,9 @@
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
 
+        // 对话历史
+        let conversationHistory = [];
+
         // 系统提示词
         const SYSTEM_PROMPT = `你是一位经验丰富的算命大师，精通中国传统的周易八卦、紫微斗数、生辰八字等各种占卜术。你说话神秘而睿智，善于用古典文雅的语言回答问题。
 
@@ -278,6 +281,7 @@
 3. 给出具体但不过分肯定的预测
 4. 适当询问用户的生辰八字、属相等信息以提供更准确的解答
 5. 保持积极正面的态度，给用户希望和建议
+6. 记住用户告诉你的信息（如姓名、生辰等），在后续对话中使用
 
 记住：这只是娱乐，要给用户带来趣味性的体验。`;
 
@@ -291,6 +295,12 @@
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
+
+            // 添加用户消息到历史
+            conversationHistory.push({
+                role: 'user',
+                content: message
+            });
 
             // 添加用户消息
             addMessage(message, 'user');
@@ -306,12 +316,24 @@
 
             try {
                 // 调用阿里云百炼API
-                const response = await callAPI(message);
+                const response = await callAPI();
                 removeMessage(loadingId);
+
+                // 添加AI回复到历史
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: response
+                });
+
                 addMessage(response, 'assistant');
             } catch (error) {
                 removeMessage(loadingId);
-                addMessage('抱歉，天机不可泄露太多，请稍后再试...', 'assistant');
+                const errorMsg = '抱歉，天机不可泄露太多，请稍后再试...';
+                conversationHistory.push({
+                    role: 'assistant',
+                    content: errorMsg
+                });
+                addMessage(errorMsg, 'assistant');
                 console.error('API调用失败:', error);
             }
 
@@ -322,7 +344,16 @@
         }
 
         // 调用阿里云百炼API
-        async function callAPI(userMessage) {
+        async function callAPI() {
+            // 构建完整的消息历史
+            const messages = [
+                {
+                    role: 'system',
+                    content: SYSTEM_PROMPT
+                },
+                ...conversationHistory
+            ];
+
             const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -331,16 +362,7 @@
                 },
                 body: JSON.stringify({
                     model: 'qwen-plus',
-                    messages: [
-                        {
-                            role: 'system',
-                            content: SYSTEM_PROMPT
-                        },
-                        {
-                            role: 'user',
-                            content: userMessage
-                        }
-                    ]
+                    messages: messages
                 })
             });
 
