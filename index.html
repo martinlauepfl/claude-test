@@ -898,7 +898,7 @@
                 paymentDesc2: 'Unlock 50 more conversations',
                 paymentBtn: 'Pay Now',
                 paymentCancelBtn: 'Cancel',
-                paymentPrice: '$0.99',
+                paymentPrice: '$0.40',
                 errorCredentials: 'Invalid email or password',
                 errorEmailNotConfirmed: 'Please verify your email first',
                 errorPasswordMismatch: 'Passwords do not match',
@@ -1001,7 +1001,7 @@
             document.getElementById('paymentDesc2').textContent = t('paymentDesc2');
             document.getElementById('paymentBtn').textContent = t('paymentBtn');
             document.getElementById('paymentCancelBtn').textContent = t('paymentCancelBtn');
-            document.getElementById('paymentPrice').innerHTML = currentLanguage === 'zh' ? '<small>¥</small>4.99' : '<small>$</small>0.99';
+            document.getElementById('paymentPrice').innerHTML = currentLanguage === 'zh' ? '<small>¥</small>4.99' : '<small>$</small>0.40';
 
             // 更新配额显示
             updateQuotaBadge();
