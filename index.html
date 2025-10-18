@@ -1004,7 +1004,13 @@
 
         // 检查是否有剩余次数
         function checkQuota() {
-            if (!userQuota || userQuota.quota <= 0) {
+            // 临时跳过配额检查，直到配额查询问题解决
+            if (!userQuota) {
+                console.warn('配额数据未加载，暂时允许使用');
+                return true;
+            }
+
+            if (userQuota.quota <= 0) {
                 showPaymentModal();
                 return false;
             }
@@ -1013,6 +1019,11 @@
 
         // 扣除次数
         async function deductQuota() {
+            if (!userQuota) {
+                console.warn('配额数据未加载，跳过扣除');
+                return;
+            }
+
             const newQuota = userQuota.quota - 1;
 
             const { error } = await supabase
