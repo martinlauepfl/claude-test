@@ -884,9 +884,13 @@
             }
 
             currentUser = data.user;
-            await loadUserQuota();
+
+            // 先关闭登录框和显示界面，然后异步加载配额
             document.getElementById('loginModal').classList.remove('active');
             showUserInfo();
+
+            // 异步加载配额，不阻塞界面
+            loadUserQuota().catch(err => console.error('加载配额失败:', err));
         }
 
         // 处理注册
@@ -935,6 +939,11 @@
             conversationHistory = [];
             document.getElementById('userInfo').style.display = 'none';
             chatContainer.innerHTML = `
+                <div id="verificationBanner" class="verification-banner" style="display: none;">
+                    <strong>⚠️ 请验证您的邮箱</strong><br>
+                    我们已向您的邮箱发送了验证链接，请查收并点击链接完成验证。
+                    <a class="resend-link" onclick="resendVerificationEmail()">重新发送</a>
+                </div>
                 <div class="welcome-message">
                     <h2>欢迎来到AI算命大师</h2>
                     <p>我精通周易八卦、紫微斗数、生辰八字，有什么想问的吗？</p>
