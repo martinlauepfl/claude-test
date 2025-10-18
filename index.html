@@ -82,6 +82,43 @@
             max-width: 700px;
         }
 
+        .message-content p {
+            margin: 0.5em 0;
+        }
+
+        .message-content p:first-child {
+            margin-top: 0;
+        }
+
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+        }
+
+        .message-content em {
+            font-style: italic;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 0.5em 0;
+            padding-left: 1.5em;
+        }
+
+        .message-content li {
+            margin: 0.25em 0;
+        }
+
+        .message-content code {
+            background-color: #f3f4f6;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+        }
+
         .message.user .message-content {
             background-color: #f4f4f4;
             padding: 12px 16px;
@@ -225,6 +262,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const API_KEY = 'sk-dd0415392eba4dd1856f2b29560b0035';
         const chatContainer = document.getElementById('chatContainer');
@@ -325,7 +363,14 @@
 
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
-            messageContent.textContent = content;
+
+            // 用户消息直接显示文本，AI回复支持Markdown格式
+            if (role === 'user') {
+                messageContent.textContent = content;
+            } else {
+                // 使用marked库解析Markdown
+                messageContent.innerHTML = marked.parse(content);
+            }
 
             if (role === 'user') {
                 messageDiv.appendChild(messageContent);
