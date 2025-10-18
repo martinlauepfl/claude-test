@@ -12,26 +12,51 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: #f7f7f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 25%, #4c1d95 50%, #5b21b6 75%, #6d28d9 100%);
+            background-attachment: fixed;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .header {
-            background-color: #fff;
-            border-bottom: 1px solid #e5e5e5;
-            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 16px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            z-index: 10;
         }
 
         .header h1 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2d333a;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.3);
+            letter-spacing: 1px;
         }
 
         .user-info {
@@ -39,44 +64,89 @@
             align-items: center;
             gap: 12px;
             font-size: 14px;
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .quota-badge {
-            background-color: #8b5cf6;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
             color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
+            padding: 6px 14px;
+            border-radius: 20px;
             font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(139, 92, 246, 0.6);
+            }
         }
 
         .logout-btn {
             background: none;
             border: none;
-            color: #8b5cf6;
+            color: rgba(255, 255, 255, 0.9);
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.3s ease;
         }
 
         .logout-btn:hover {
-            text-decoration: underline;
+            color: #fbbf24;
+            transform: translateY(-1px);
         }
 
         .chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 20px;
+            padding: 32px 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 4px;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
         }
 
         .message {
             display: flex;
-            gap: 12px;
-            max-width: 800px;
+            gap: 16px;
+            max-width: 900px;
             margin: 0 auto;
             width: 100%;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .message.user {
@@ -84,32 +154,37 @@
         }
 
         .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
         .avatar.assistant {
-            background-color: #8b5cf6;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
             color: white;
         }
 
         .avatar.user {
-            background-color: #2d333a;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
             color: white;
         }
 
         .message-content {
-            background-color: transparent;
-            padding: 8px 0;
-            line-height: 1.6;
-            color: #2d333a;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 16px 20px;
+            line-height: 1.7;
+            color: #1f2937;
             max-width: 700px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .message-content p {
@@ -150,15 +225,21 @@
         }
 
         .message.user .message-content {
-            background-color: #f4f4f4;
-            padding: 12px 16px;
-            border-radius: 18px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.9) 0%, rgba(99, 102, 241, 0.9) 100%);
+            color: white;
+            padding: 16px 20px;
+            border-radius: 18px 18px 4px 18px;
+            box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
         }
 
         .input-area {
-            background-color: #fff;
-            border-top: 1px solid #e5e5e5;
-            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 24px;
+            position: relative;
+            z-index: 10;
         }
 
         .input-container {
@@ -169,45 +250,57 @@
 
         .input-box {
             width: 100%;
-            min-height: 52px;
+            min-height: 56px;
             max-height: 200px;
-            padding: 14px 50px 14px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
+            padding: 16px 60px 16px 20px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
             font-size: 15px;
             font-family: inherit;
             resize: none;
             outline: none;
             overflow-y: auto;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1f2937;
+            transition: all 0.3s ease;
         }
 
         .input-box:focus {
             border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1), 0 8px 24px rgba(139, 92, 246, 0.2);
+            transform: translateY(-2px);
         }
 
         .send-button {
             position: absolute;
-            right: 10px;
-            bottom: 10px;
-            width: 32px;
-            height: 32px;
-            background-color: #8b5cf6;
+            right: 12px;
+            bottom: 12px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
             border: none;
-            border-radius: 6px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
         }
 
         .send-button:hover:not(:disabled) {
-            opacity: 0.8;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .send-button:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
         }
 
         .send-button:disabled {
-            opacity: 0.4;
+            opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
         .send-button svg {
@@ -249,18 +342,48 @@
 
         .welcome-message {
             text-align: center;
-            padding: 40px 20px;
-            color: #6b7280;
+            padding: 80px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            animation: fadeInDown 1s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .welcome-message h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            color: #2d333a;
+            font-size: 48px;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-shadow: 0 0 60px rgba(251, 191, 36, 0.5);
+            animation: glow 3s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% {
+                text-shadow: 0 0 40px rgba(251, 191, 36, 0.4);
+            }
+            50% {
+                text-shadow: 0 0 80px rgba(251, 191, 36, 0.6);
+            }
         }
 
         .welcome-message p {
-            font-size: 14px;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 300;
         }
 
         /* 登录/注册模态框 */
@@ -271,10 +394,13 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            animation: fadeIn 0.3s ease;
         }
 
         .modal.active {
@@ -282,117 +408,162 @@
         }
 
         .modal-content {
-            background-color: white;
-            padding: 32px;
-            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 24px;
             max-width: 400px;
             width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .modal-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 24px;
-            color: #2d333a;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 28px;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             text-align: center;
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
 
         .form-label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 14px;
-            color: #6b7280;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .form-input {
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+            padding: 14px 18px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
             font-size: 15px;
             outline: none;
+            background: rgba(255, 255, 255, 0.95);
+            color: #1f2937;
+            transition: all 0.3s ease;
         }
 
         .form-input:focus {
             border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            transform: translateY(-1px);
         }
 
         .btn-primary {
             width: 100%;
-            padding: 12px;
-            background-color: #8b5cf6;
+            padding: 14px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
         }
 
         .btn-primary:disabled {
             opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
         }
 
         .modal-footer {
-            margin-top: 20px;
+            margin-top: 24px;
             text-align: center;
             font-size: 14px;
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .modal-link {
-            color: #8b5cf6;
+            color: #fbbf24;
             cursor: pointer;
             text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .modal-link:hover {
-            text-decoration: underline;
+            color: #f59e0b;
+            text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
         }
 
         .error-message {
-            color: #ef4444;
+            color: #fca5a5;
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 12px;
+            background: rgba(239, 68, 68, 0.1);
+            padding: 10px;
+            border-radius: 8px;
         }
 
         .success-message {
-            color: #10b981;
+            color: #86efac;
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 12px;
+            background: rgba(16, 185, 129, 0.1);
+            padding: 10px;
+            border-radius: 8px;
         }
 
         .info-message {
-            background-color: #dbeafe;
-            color: #1e40af;
+            background: rgba(59, 130, 246, 0.1);
+            color: #93c5fd;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
             margin-bottom: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
         }
 
         .verification-banner {
-            background-color: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 12px 16px;
+            background: rgba(251, 191, 36, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 4px solid #fbbf24;
+            padding: 16px 20px;
             margin: 16px auto;
             max-width: 800px;
-            border-radius: 4px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
         .verification-banner strong {
-            color: #92400e;
+            color: #fbbf24;
         }
 
         .resend-link {
@@ -400,10 +571,12 @@
             cursor: pointer;
             text-decoration: underline;
             margin-left: 8px;
+            transition: all 0.2s ease;
         }
 
         .resend-link:hover {
-            opacity: 0.8;
+            color: #6366f1;
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
         }
 
         /* 支付模态框 */
@@ -412,42 +585,51 @@
         }
 
         .payment-price {
-            font-size: 48px;
-            font-weight: 700;
-            color: #8b5cf6;
-            margin: 20px 0;
+            font-size: 56px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 24px 0;
+            text-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
         }
 
         .payment-price small {
-            font-size: 24px;
+            font-size: 28px;
         }
 
         .payment-desc {
             font-size: 16px;
-            color: #6b7280;
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 24px;
         }
 
         .payment-buttons {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
 
         .btn-secondary {
             flex: 1;
-            padding: 12px;
-            background-color: #e5e7eb;
-            color: #2d333a;
-            border: none;
-            border-radius: 8px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
         }
 
         .btn-secondary:hover {
-            background-color: #d1d5db;
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
         }
     </style>
 </head>
