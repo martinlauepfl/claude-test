@@ -1085,24 +1085,44 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
 
                 if (error) {
                     console.error('获取会话失败:', error);
-                    // 清除可能损坏的会话
-                    await supabase.auth.signOut();
+                    // 清除可能损坏的会话 (静默模式,不抛出错误)
+                    try {
+                        await supabase.auth.signOut();
+                    } catch (e) {
+                        console.error('清除会话失败:', e);
+                    }
                     showLoginModal();
                     return;
                 }
 
                 if (session) {
+                    // 验证会话是否真的有效
                     currentUser = session.user;
-                    await loadUserQuota();
-                    await loadChatHistory();
-                    showUserInfo();
+                    try {
+                        await loadUserQuota();
+                        await loadChatHistory();
+                        showUserInfo();
+                    } catch (loadError) {
+                        console.error('加载用户数据失败:', loadError);
+                        // 如果加载失败,可能是会话无效,清除并重新登录
+                        try {
+                            await supabase.auth.signOut();
+                        } catch (e) {
+                            console.error('清除会话失败:', e);
+                        }
+                        showLoginModal();
+                    }
                 } else {
                     showLoginModal();
                 }
             } catch (err) {
                 console.error('初始化会话时出错:', err);
-                // 清除可能的缓存问题
-                await supabase.auth.signOut();
+                // 清除可能的缓存问题 (静默模式)
+                try {
+                    await supabase.auth.signOut();
+                } catch (e) {
+                    console.error('清除会话失败:', e);
+                }
                 showLoginModal();
                 return;
             }
@@ -1289,38 +1309,69 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
         // 处理登录
         async function handleLogin(event) {
             event.preventDefault();
+            console.log('=== 开始登录流程 ===');
+
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            const loginError = document.getElementById('loginError');
             const email = document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value;
 
-            try {
-                // 清除旧的缓存会话
-                await supabase.auth.signOut();
+            console.log('登录邮箱:', email);
 
-                // 执行新的登录
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.textContent = currentLanguage === 'zh' ? '登录中...' : 'Logging in...';
+            loginError.textContent = '';
+
+            try {
+                console.log('调用 signInWithPassword...');
+                // 执行登录
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
                 });
 
+                console.log('signInWithPassword 完成:', { hasData: !!data, hasError: !!error });
+
                 if (error) {
+                    console.error('登录错误:', error.message);
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = t('loginSubmitBtn');
+
                     if (error.message === 'Invalid login credentials') {
-                        document.getElementById('loginError').textContent = t('errorCredentials');
+                        loginError.textContent = t('errorCredentials');
                     } else if (error.message === 'Email not confirmed') {
-                        document.getElementById('loginError').textContent = t('errorEmailNotConfirmed');
+                        loginError.textContent = t('errorEmailNotConfirmed');
                     } else {
-                        document.getElementById('loginError').textContent = error.message;
+                        loginError.textContent = error.message;
                     }
                     return;
                 }
 
+                // 登录成功
+                console.log('登录成功,用户ID:', data.user.id);
                 currentUser = data.user;
+
+                console.log('加载用户配额...');
                 await loadUserQuota();
+
+                console.log('加载聊天历史...');
                 await loadChatHistory();
+
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.textContent = t('loginSubmitBtn');
+
+                // 关闭登录框
+                console.log('关闭登录框...');
                 document.getElementById('loginModal').classList.remove('active');
                 showUserInfo();
+                console.log('=== 登录流程完成 ===');
             } catch (err) {
                 console.error('登录过程出错:', err);
-                document.getElementById('loginError').textContent = t('apiError');
+                submitBtn.disabled = false;
+                submitBtn.textContent = t('loginSubmitBtn');
+                loginError.textContent = t('apiError');
             }
         }
 
