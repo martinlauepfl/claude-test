@@ -1,6 +1,6 @@
 // Supabase Edge Function: 创建 Stripe Checkout Session
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import Stripe from 'https://esm.sh/stripe@14.11.0?target=deno'
+import Stripe from 'https://esm.sh/stripe@17.5.0?target=deno'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,6 +38,9 @@ serve(async (req) => {
 
     // 根据语言选择价格ID
     const priceId = language === 'zh' ? STRIPE_PRICE_ID_CNY : STRIPE_PRICE_ID_USD
+
+    // 临时日志:输出当前使用的Price ID
+    console.log(`Language: ${language}, Using Price ID: ${priceId}`)
 
     // 创建 Checkout Session
     const session = await stripe.checkout.sessions.create({
