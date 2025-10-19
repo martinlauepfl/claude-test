@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>登录测试</title>
+</head>
+<body>
+    <h1>Supabase 登录测试</h1>
+    <div id="status">初始化中...</div>
+    <br>
+    <button onclick="testLogin()">测试登录</button>
+    <div id="result" style="margin-top: 20px; white-space: pre-wrap;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script>
+        const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
+
+        let supabase;
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+
+        try {
+            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+                auth: {
+                    autoRefreshToken: true,
+                    persistSession: true,
+                    detectSessionInUrl: true
+                }
+            });
+            statusDiv.textContent = '✅ Supabase 客户端初始化成功';
+            statusDiv.style.color = 'green';
+        } catch (error) {
+            statusDiv.textContent = '❌ 初始化失败: ' + error.message;
+            statusDiv.style.color = 'red';
+        }
+
+        async function testLogin() {
+            resultDiv.textContent = '测试中...\n';
+
+            try {
+                // 测试1: 检查localStorage
+                resultDiv.textContent += '\n【测试1】localStorage 可用性:\n';
+                try {
+                    localStorage.setItem('test', 'value');
+                    localStorage.removeItem('test');
+                    resultDiv.textContent += '✅ localStorage 可用\n';
+                } catch (e) {
+                    resultDiv.textContent += '❌ localStorage 不可用: ' + e.message + '\n';
+                }
+
+                // 测试2: 检查当前会话
+                resultDiv.textContent += '\n【测试2】当前会话状态:\n';
+                const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                if (sessionError) {
+                    resultDiv.textContent += '❌ 获取会话失败: ' + sessionError.message + '\n';
+                } else if (session) {
+                    resultDiv.textContent += '✅ 已有会话: ' + session.user.email + '\n';
+                } else {
+                    resultDiv.textContent += '⚠️  无会话\n';
+                }
+
+                // 测试3: 尝试登录（使用测试账号）
+                resultDiv.textContent += '\n【测试3】尝试登录测试账号:\n';
+                resultDiv.textContent += '邮箱: test@example.com\n';
+                resultDiv.textContent += '密码: test123456\n';
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: 'test@example.com',
+                    password: 'test123456'
+                });
+
+                if (error) {
+                    resultDiv.textContent += '❌ 登录失败: ' + error.message + '\n';
+                    resultDiv.textContent += '错误详情: ' + JSON.stringify(error, null, 2) + '\n';
+                } else {
+                    resultDiv.textContent += '✅ 登录成功!\n';
+                    resultDiv.textContent += '用户ID: ' + data.user.id + '\n';
+                    resultDiv.textContent += '邮箱: ' + data.user.email + '\n';
+                }
+
+            } catch (error) {
+                resultDiv.textContent += '\n❌ 测试过程出错: ' + error.message + '\n';
+                resultDiv.textContent += '错误堆栈: ' + error.stack + '\n';
+            }
+        }
+
+        // 页面加载时自动运行测试
+        window.addEventListener('load', () => {
+            setTimeout(testLogin, 1000);
+        });
+    </script>
+</body>
+</html>
