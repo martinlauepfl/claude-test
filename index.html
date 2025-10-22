@@ -713,6 +713,195 @@
             border-color: rgba(255, 255, 255, 0.4);
             transform: translateY(-2px);
         }
+
+        /* ============================================
+           移动端适配 (Mobile Responsive)
+           ============================================ */
+        @media (max-width: 768px) {
+            /* 头部优化 */
+            .header {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .header h1 {
+                font-size: 18px;
+            }
+
+            .user-info {
+                font-size: 13px;
+                gap: 8px;
+            }
+
+            .quota-badge {
+                padding: 5px 12px;
+                font-size: 12px;
+            }
+
+            .lang-toggle {
+                padding: 5px 10px;
+                font-size: 12px;
+            }
+
+            .logout-btn {
+                font-size: 13px;
+            }
+
+            /* 聊天容器优化 */
+            .chat-container {
+                padding: 20px 12px;
+                gap: 16px;
+            }
+
+            /* 消息气泡优化 */
+            .message {
+                max-width: 90%;
+                padding: 12px 16px;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+
+            .message.user {
+                margin-left: 10%;
+            }
+
+            .message.assistant {
+                margin-right: 10%;
+            }
+
+            /* 输入区域优化 */
+            .input-container {
+                padding: 12px;
+                gap: 8px;
+            }
+
+            .input-container input {
+                font-size: 16px !important; /* 防止 iOS 自动缩放 */
+                padding: 12px 16px;
+                min-height: 44px; /* iOS 推荐最小点击区域 */
+            }
+
+            .input-container button {
+                padding: 12px 20px;
+                font-size: 15px;
+                min-height: 44px;
+                min-width: 60px;
+            }
+
+            /* 模态框优化 */
+            .modal-content {
+                width: 95%;
+                max-width: 400px;
+                padding: 24px 20px;
+                margin: 20px;
+            }
+
+            .modal-content h2 {
+                font-size: 20px;
+                margin-bottom: 16px;
+            }
+
+            .modal-content input {
+                font-size: 16px !important;
+                padding: 12px;
+                min-height: 44px;
+            }
+
+            .modal-content button {
+                padding: 12px;
+                font-size: 15px;
+                min-height: 44px;
+            }
+
+            /* 支付模态框优化 */
+            .price {
+                font-size: 28px;
+            }
+
+            .quota-info {
+                font-size: 15px;
+            }
+
+            /* 清除历史按钮 */
+            #clearHistoryBtn {
+                padding: 8px 16px;
+                font-size: 13px;
+                min-height: 40px;
+            }
+
+            /* 邮箱验证横幅 */
+            .email-verification-banner {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .email-verification-banner button {
+                padding: 6px 12px;
+                font-size: 12px;
+            }
+        }
+
+        /* 小屏幕手机优化 (iPhone SE 等) */
+        @media (max-width: 375px) {
+            .header h1 {
+                font-size: 16px;
+            }
+
+            .user-info {
+                font-size: 12px;
+            }
+
+            .message {
+                font-size: 14px;
+                padding: 10px 14px;
+            }
+
+            .input-container {
+                padding: 10px;
+            }
+
+            .modal-content {
+                width: 90%;
+                padding: 20px 16px;
+            }
+
+            .price {
+                font-size: 24px;
+            }
+        }
+
+        /* 横屏模式优化 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .chat-container {
+                padding: 16px 12px;
+            }
+
+            .modal-content {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+        }
+
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            /* 增加所有可点击元素的点击区域 */
+            button, .logout-btn, .lang-toggle {
+                min-height: 44px;
+                min-width: 44px;
+            }
+
+            /* 移除 hover 效果,优化触摸反馈 */
+            button:active, .logout-btn:active, .lang-toggle:active {
+                opacity: 0.7;
+                transform: scale(0.98);
+            }
+
+            /* 优化输入框聚焦体验 */
+            input:focus, textarea:focus {
+                font-size: 16px !important;
+            }
+        }
     </style>
 
     <!-- 结构化数据 (JSON-LD) for SEO -->
