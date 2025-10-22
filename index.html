@@ -1446,12 +1446,10 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
                     data.forEach(msg => {
                         if (msg.role !== 'system') {
                             addMessage(msg.content, msg.role);
-                            if (msg.role !== 'system') {
-                                conversationHistory.push({
-                                    role: msg.role,
-                                    content: msg.content
-                                });
-                            }
+                            conversationHistory.push({
+                                role: msg.role,
+                                content: msg.content
+                            });
                         }
                     });
                 }
@@ -1842,7 +1840,7 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
             });
 
             // 保存用户消息到数据库
-            saveChatMessage('user', message);
+            await saveChatMessage('user', message);
 
             // 添加用户消息
             addMessage(message, 'user');
@@ -1879,7 +1877,7 @@ Remember: You're an interesting person, not a robot. Entertainment first, but st
                 });
 
                 // 保存 AI 回复到数据库
-                saveChatMessage('assistant', response);
+                await saveChatMessage('assistant', response);
 
                 // 只有成功获得回复才扣除次数
                 await deductQuota();
