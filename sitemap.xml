@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <!-- 主页 - 中文版 -->
+    <url>
+        <loc>https://ai-fortune.top/</loc>
+        <lastmod>2025-10-22</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+        <xhtml:link rel="alternate" hreflang="zh-CN" href="https://ai-fortune.top/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://ai-fortune.top/?lang=en"/>
+    </url>
+
+    <!-- 主页 - 英文版 -->
+    <url>
+        <loc>https://ai-fortune.top/index.html</loc>
+        <lastmod>2025-10-22</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1.0</priority>
+    </url>
+</urlset>
