@@ -1340,7 +1340,12 @@
 1. 事业运：*稳步上升*
 2. 感情运：需要注意"
 
-记住：你是在微信聊天，不是在写报告。纯文字，自然流畅。`;
+记住：你是在微信聊天，不是在写报告。纯文字，自然流畅。
+
+重要提示：
+- 不要分太多段落，一个主题说完再说下一个
+- 避免使用小标题式的分行
+- 保持像真人聊天一样的段落长度`;
             } else {
                 const timeOfDay = hour >= 6 && hour < 12 ? 'morning' :
                                 hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
@@ -1378,7 +1383,12 @@ Forbidden: Any code blocks
 1. Career: *on the rise*
 2. Relationships: need attention"
 
-Remember: You're texting on WhatsApp, not writing a report. Plain text, natural flow.`;
+Remember: You're texting on WhatsApp, not writing a report. Plain text, natural flow.
+
+Important tips:
+- Don't break into too many paragraphs, finish one topic then move to the next
+- Avoid title-like line breaks
+- Keep paragraph lengths similar to real human chat`;
             }
         }
 
@@ -2087,7 +2097,15 @@ Remember: You're texting on WhatsApp, not writing a report. Plain text, natural 
                     return match.replace(/```/g, '');
                 })
                 // 移除行内代码 `code` → code
-                .replace(/`(.+?)`/g, '$1');
+                .replace(/`(.+?)`/g, '$1')
+                // 🔥 优化：将多个连续换行替换为单个换行，让文本更紧凑
+                .replace(/\n\s*\n\s*\n/g, '\n\n')
+                // 移除段落开头的多余空格
+                .replace(/^\s+/gm, '')
+                // 确保中文段落之间只有一个换行
+                .replace(/([。！？])\s*\n\s*([^\n])/g, '$1 $2')
+                // 处理标题后的换行
+                .replace(/：\s*\n\s*/g, '：');
         }
 
         // 添加消息到聊天界面
