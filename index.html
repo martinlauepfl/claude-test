@@ -467,6 +467,19 @@
             max-width: 500px;
             margin: 0 auto;
         }
+        /* 移动端欢迎消息优化 */
+        @media (max-width: 768px) {
+            .welcome-message {
+                padding: 50px 20px;
+            }
+            .welcome-message h2 {
+                font-size: 24px;
+                margin-bottom: 16px;
+            }
+            .welcome-message p {
+                font-size: 15px;
+            }
+        }
 
         /* 登录/注册模态框 */
         .modal {
@@ -752,6 +765,22 @@
             .chat-container {
                 padding: 20px 12px;
                 gap: 16px;
+            }
+            /* 输入区域移动端适配 */
+            .input-area {
+                padding: 16px;
+            }
+            .input-container {
+                max-width: 100%;
+            }
+            .input-box {
+                font-size: 16px; /* 防止iOS缩放 */
+                padding: 12px 50px 12px 16px;
+            }
+            .send-button {
+                right: 8px;
+                width: 40px;
+                height: 40px;
             }
 
             /* 消息气泡优化 */
@@ -1298,7 +1327,7 @@
 
 🚫🚫🚫 格式禁令（违反就是错误）：
 你的回复中绝对不能出现这些符号：
-禁止： * ** # ## - 1. 2. 3. • > ` 
+禁止： * ** # ## - 1. 2. 3. • > \`
 禁止：任何列表格式
 禁止：任何标题格式
 禁止：任何代码块
@@ -1338,7 +1367,7 @@ When fortune telling:
 Your response must NEVER contain these symbols:
 Forbidden: * ** # ## - 1. 2. 3. • > \`
 Forbidden: Any list formatting
-Forbidden: Any heading formatting  
+Forbidden: Any heading formatting
 Forbidden: Any code blocks
 
 ✅ CORRECT example:
@@ -1465,12 +1494,13 @@ Remember: You're texting on WhatsApp, not writing a report. Plain text, natural 
                     return;
                 }
 
+                // 登录后总是移除欢迎消息，让用户可以开始对话
+                const welcomeMessage = chatContainer.querySelector('.welcome-message');
+                if (welcomeMessage) {
+                    welcomeMessage.remove();
+                }
+
                 if (data && data.length > 0) {
-                    // 移除欢迎消息
-                    const welcomeMessage = chatContainer.querySelector('.welcome-message');
-                    if (welcomeMessage) {
-                        welcomeMessage.remove();
-                    }
 
                     // 显示历史消息
                     data.forEach(msg => {
