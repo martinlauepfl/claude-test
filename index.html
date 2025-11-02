@@ -373,6 +373,31 @@
             z-index: 10;
         }
 
+        /* 移动端输入区域固定 */
+        @media (max-width: 768px) {
+            .input-area {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(26, 20, 16, 0.98);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                padding: max(16px, env(safe-area-inset-bottom) + 8px) 16px 16px 16px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            /* 为主容器添加底部内边距，避免被输入框遮挡 */
+            body {
+                padding-bottom: 80px;
+            }
+
+            /* 聊天容器需要考虑固定的输入框 */
+            .chat-container {
+                padding-bottom: 120px !important;
+            }
+        }
+
         .input-container {
             max-width: 800px;
             margin: 0 auto;
@@ -783,6 +808,12 @@
            移动端适配 (Mobile Responsive)
            ============================================ */
         @media (max-width: 768px) {
+            /* 修复移动端视口高度问题 */
+            html, body {
+                height: 100vh;
+                height: -webkit-fill-available;
+            }
+
             /* 头部优化 */
             .header {
                 padding: 12px 16px;
@@ -817,10 +848,6 @@
             .chat-container {
                 padding: 20px 12px;
                 gap: 16px;
-            }
-            /* 输入区域移动端适配 */
-            .input-area {
-                padding: 16px;
             }
             .input-container {
                 max-width: 100%;
