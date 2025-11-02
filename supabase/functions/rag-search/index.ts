@@ -41,8 +41,9 @@ async function getEmbedding(text: string): Promise<number[]> {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'text-embedding-v3',
+        model: 'text-embedding-v4',
         input: text,
+        dimension: 1024,
         encoding_format: 'float'
       })
     }
@@ -54,7 +55,10 @@ async function getEmbedding(text: string): Promise<number[]> {
   }
 
   const result = await response.json()
-  return result.data[0].embedding
+  const embedding = result.data[0].embedding
+  console.log(`[RAG] 生成向量长度: ${embedding.length}`)
+  console.log(`[RAG] 向量前5个值: ${embedding.slice(0, 5)}`)
+  return embedding
 }
 
 /**
@@ -77,6 +81,11 @@ async function searchKnowledge(
 
   if (error) {
     throw new Error(`数据库查询错误: ${error.message}`)
+  }
+
+  console.log(`[RAG] 查询返回 ${data?.length || 0} 个结果`)
+  if (data && data.length > 0) {
+    console.log(`[RAG] 相似度分布:`, data.map(d => d.similarity).slice(0, 5))
   }
 
   return data || []
