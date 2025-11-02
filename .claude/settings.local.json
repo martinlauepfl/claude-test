@@ -21,7 +21,8 @@
       "WebFetch(domain:help.aliyun.com)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(kill:*)"
     ],
     "deny": [],
     "ask": []
