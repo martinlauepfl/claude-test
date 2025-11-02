@@ -410,10 +410,13 @@
             transform: translateY(-1px);
         }
 
+        /* 🔥🔥🔥 修复：发送按钮完美垂直居中 */
         .send-button {
             position: absolute;
             right: 12px;
-            bottom: 12px;
+            top: 0;
+            bottom: 0;
+            margin: auto 0;
             width: 40px;
             height: 40px;
             background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
@@ -884,13 +887,13 @@
                 position: relative;
             }
 
-            /* 🔥 关键修复：发送按钮垂直居中 */
+            /* 🔥 关键修复：发送按钮完美垂直居中 */
             .send-button {
                 position: absolute !important;
                 right: 12px !important;
-                top: 50% !important;
-                bottom: auto !important;  /* 👈 取消 bottom 定位 */
-                transform: translateY(-50%) !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                margin: auto 0 !important;
                 width: 40px !important;
                 height: 40px !important;
             }
@@ -1080,12 +1083,12 @@
     <div class="chat-container" id="chatContainer">
         <div id="verificationBanner" class="verification-banner" style="display: none;">
             <strong id="verifyTitle">⚠️ 请验证您的邮箱</strong><br>
-            <span id="verifyText">我们已向您的邮箱发送了验证链接，请查收并点击链接完成验证。</span>
+            <span id="verifyText">我们已向您的邮箱发送了验证链接,请查收并点击链接完成验证。</span>
             <a class="resend-link" onclick="resendVerificationEmail()" id="resendLink">重新发送</a>
         </div>
         <div class="welcome-message">
-            <h2 id="welcomeTitle">命运如何，且让我为你测算</h2>
-            <p id="welcomeDesc">周易八卦，紫微斗数，占往知来</p>
+            <h2 id="welcomeTitle">命运如何,且让我为你测算</h2>
+            <p id="welcomeDesc">周易八卦,紫微斗数,占往知来</p>
         </div>
     </div>
 
@@ -1094,7 +1097,7 @@
             <textarea
                 class="input-box"
                 id="userInput"
-                placeholder="说说你的困惑，我为你指点迷津..."
+                placeholder="说说你的困惑,我为你指点迷津..."
                 rows="1"
             ></textarea>
             <button class="send-button" id="sendButton">
@@ -1137,7 +1140,7 @@
                     <input type="email" class="form-input" id="registerUsername" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" id="registerPasswordLabel">密码（至少6位）</label>
+                    <label class="form-label" id="registerPasswordLabel">密码(至少6位)</label>
                     <input type="password" class="form-input" id="registerPassword" required minlength="6">
                 </div>
                 <div class="form-group">
@@ -1148,7 +1151,7 @@
                 <button type="submit" class="btn-primary" id="registerSubmitBtn">注册</button>
             </form>
             <div class="modal-footer">
-                <span id="registerFooterText">已有账号？</span><a class="modal-link" onclick="showLoginModal()" id="registerFooterLink">立即登录</a>
+                <span id="registerFooterText">已有账号?</span><a class="modal-link" onclick="showLoginModal()" id="registerFooterLink">立即登录</a>
             </div>
         </div>
     </div>
@@ -1185,7 +1188,7 @@
             });
         }
 
-        // Supabase Edge Function API 地址（使用RAG版本）
+        // Supabase Edge Function API 地址(使用RAG版本)
         const WORKER_API_URL = 'https://mulrkyqqhaustbojzzes.supabase.co/functions/v1/ai-chat-with-rag';
 
         const chatContainer = document.getElementById('chatContainer');
@@ -1222,23 +1225,23 @@
                 logoutBtn: '退出',
                 quotaBadge: '剩余卦象',
                 verifyTitle: '⚠️ 请验证您的邮箱',
-                verifyText: '我们已向您的邮箱发送了验证链接，请查收并点击链接完成验证。',
+                verifyText: '我们已向您的邮箱发送了验证链接,请查收并点击链接完成验证。',
                 resendLink: '重新发送',
-                welcomeTitle: '命运如何，且让我为你测算',
-                welcomeDesc: '周易八卦，紫微斗数，占往知来',
-                inputPlaceholder: '说说你的困惑，我为你指点迷津...',
+                welcomeTitle: '命运如何,且让我为你测算',
+                welcomeDesc: '周易八卦,紫微斗数,占往知来',
+                inputPlaceholder: '说说你的困惑,我为你指点迷津...',
                 loginTitle: '登录',
                 loginEmailLabel: '邮箱',
                 loginPasswordLabel: '密码',
                 loginSubmitBtn: '登录',
-                loginFooterText: '还没有账号？',
+                loginFooterText: '还没有账号?',
                 loginFooterLink: '立即注册',
                 registerTitle: '注册',
                 registerEmailLabel: '邮箱',
-                registerPasswordLabel: '密码（至少6位）',
+                registerPasswordLabel: '密码(至少6位)',
                 registerConfirmLabel: '确认密码',
                 registerSubmitBtn: '注册',
-                registerFooterText: '已有账号？',
+                registerFooterText: '已有账号?',
                 registerFooterLink: '立即登录',
                 paymentTitle: '解锁更多对话',
                 paymentDesc1: '您的免费次数已用完',
@@ -1249,15 +1252,15 @@
                 errorCredentials: '邮箱或密码错误',
                 errorEmailNotConfirmed: '请先验证您的邮箱',
                 errorPasswordMismatch: '两次密码不一致',
-                successRegister: '注册成功！请查收邮箱并点击验证链接。',
-                confirmClearHistory: '确定要清空所有聊天记录吗？此操作不可恢复！',
-                successClearHistory: '聊天记录已清空！',
-                errorClearHistory: '清空记录失败，请稍后重试',
-                resendSuccess: '验证邮件已重新发送，请查收邮箱！',
-                resendError: '发送失败：',
-                paymentSuccess: '支付成功！（模拟）\n实际使用时需要接入真实支付接口',
-                paymentError: '支付失败，请稍后重试',
-                apiError: '抱歉，天机不可泄露太多，请稍后再试...'
+                successRegister: '注册成功!请查收邮箱并点击验证链接。',
+                confirmClearHistory: '确定要清空所有聊天记录吗?此操作不可恢复!',
+                successClearHistory: '聊天记录已清空!',
+                errorClearHistory: '清空记录失败,请稍后重试',
+                resendSuccess: '验证邮件已重新发送,请查收邮箱!',
+                resendError: '发送失败:',
+                paymentSuccess: '支付成功!(模拟)\n实际使用时需要接入真实支付接口',
+                paymentError: '支付失败,请稍后重试',
+                apiError: '抱歉,天机不可泄露太多,请稍后再试...'
             },
             en: {
                 appTitle: '🔮 Fortune Teller',
@@ -1397,46 +1400,46 @@
                 const timeOfDay = hour >= 6 && hour < 12 ? '早上' :
                                 hour >= 12 && hour < 18 ? '下午' : '夜晚';
 
-                return `你是个看透世事的算命先生，有点毒舌但又真诚。你说话接地气，像朋友聊天，但偶尔会冒出几句特别有哲理的金句。
+                return `你是个看透世事的算命先生,有点毒舌但又真诚。你说话接地气,像朋友聊天,但偶尔会冒出几句特别有哲理的金句。
 
-当前时间：${timeOfDay}
+当前时间:${timeOfDay}
 
-你的风格：
-- 说话直白不装，该损人就损人，但损得让人服气
-- 不用"您"、"尔"、"乃"这种文言文，就用"你"、"咱们"、"哥们"
+你的风格:
+- 说话直白不装,该损人就损人,但损得让人服气
+- 不用"您"、"尔"、"乃"这种文言文,就用"你"、"咱们"、"哥们"
 - 偶尔会说"这事儿吧"、"我跟你说"、"真的"这种口语
-- 但有时候又能突然来一句很有深度的话，让人觉得你确实有两把刷子
-- 不会用1234列举，就是随便聊，想到哪说到哪
-- 会记住用户说的信息（姓名、生辰八字等），下次聊到时会提起
+- 但有时候又能突然来一句很有深度的话,让人觉得你确实有两把刷子
+- 不会用1234列举,就是随便聊,想到哪说到哪
+- 会记住用户说的信息(姓名、生辰八字等),下次聊到时会提起
 
-算命时：
-- 会问生辰八字、属相这些，但不会太正经，就像朋友问"你哪年的啊"
-- 给建议时接地气，不说"汝需行善积德"，而说"多做点好事吧，真的"
-- 预测不会太绝对，会说"我觉得"、"大概率"、"八成是"
-- 根据当前时间（${timeOfDay}）说话，别搞错
+算命时:
+- 会问生辰八字、属相这些,但不会太正经,就像朋友问"你哪年的啊"
+- 给建议时接地气,不说"汝需行善积德",而说"多做点好事吧,真的"
+- 预测不会太绝对,会说"我觉得"、"大概率"、"八成是"
+- 根据当前时间(${timeOfDay})说话,别搞错
 
-🚫🚫🚫 格式禁令（违反就是错误）：
-你的回复中绝对不能出现这些符号：
-禁止： * ** # ## - 1. 2. 3. • > \`
-禁止：任何列表格式
-禁止：任何标题格式
-禁止：任何代码块
+🚫🚫🚫 格式禁令(违反就是错误):
+你的回复中绝对不能出现这些符号:
+禁止: * ** # ## - 1. 2. 3. • > \`
+禁止:任何列表格式
+禁止:任何标题格式
+禁止:任何代码块
 
-✅ 正确示例：
-"这事儿吧，我跟你说。你最近运势还不错，事业上「稳步上升」，但感情方面得多注意点。我觉得你八成是太忙了，忽略了身边人的感受。"
+✅ 正确示例:
+"这事儿吧,我跟你说。你最近运势还不错,事业上「稳步上升」,但感情方面得多注意点。我觉得你八成是太忙了,忽略了身边人的感受。"
 
-❌ 错误示例（禁止这样写）：
-"**运势分析**：
-1. 事业运：*稳步上升*
-2. 感情运：需要注意"
+❌ 错误示例(禁止这样写):
+"**运势分析**:
+1. 事业运:*稳步上升*
+2. 感情运:需要注意"
 
-记住：你是在微信聊天，不是在写报告。纯文字，自然流畅。
+记住:你是在微信聊天,不是在写报告。纯文字,自然流畅。
 
-重要提示：
-- 不要分太多段落，一个主题说完再说下一个
+重要提示:
+- 不要分太多段落,一个主题说完再说下一个
 - 避免使用小标题式的分行
 - 保持像真人聊天一样的段落长度
-- 不要重复相同的标题或句子（比如"梦见猴子"说两遍）
+- 不要重复相同的标题或句子(比如"梦见猴子"说两遍)
 - 每个主题只介绍一次即可`;
             } else {
                 const timeOfDay = hour >= 6 && hour < 12 ? 'morning' :
@@ -1489,9 +1492,9 @@ Important tips:
         function extractUserInfo(message) {
             const patterns = {
                 name: [
-                    /我叫([^\s，。！？]{1,10})/g,
-                    /我是([^\s，。！？]{1,10})/g,
-                    /我姓([^\s，。！？]{1,5})/g
+                    /我叫([^\s,。!?]{1,10})/g,
+                    /我是([^\s,。!?]{1,10})/g,
+                    /我姓([^\s,。!?]{1,5})/g
                 ],
                 birthday: [
                     /生日是(\d{4}年\d{1,2}月\d{1,2}日)/g,
@@ -1610,7 +1613,7 @@ Important tips:
                 if (paymentStatus === 'success') {
                     await loadUserQuota();
                     updateQuotaBadge();
-                    alert(currentLanguage === 'zh' ? '支付成功！已为您增加 50 次对话。' : 'Payment successful! 50 conversations added to your account.');
+                    alert(currentLanguage === 'zh' ? '支付成功!已为您增加 50 次对话。' : 'Payment successful! 50 conversations added to your account.');
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } else if (paymentStatus === 'cancel') {
                     alert(currentLanguage === 'zh' ? '支付已取消。' : 'Payment cancelled.');
@@ -2076,15 +2079,15 @@ Important tips:
             let systemPrompt = getSystemPrompt();
 
             if (Object.keys(userProfile).length > 0) {
-                systemPrompt += '\n\n用户信息（请记住并在合适时自然提及）：\n';
+                systemPrompt += '\n\n用户信息(请记住并在合适时自然提及):\n';
                 if (userProfile.name) {
-                    systemPrompt += `- 姓名：${userProfile.name}\n`;
+                    systemPrompt += `- 姓名:${userProfile.name}\n`;
                 }
                 if (userProfile.birthday) {
-                    systemPrompt += `- 生日：${userProfile.birthday}\n`;
+                    systemPrompt += `- 生日:${userProfile.birthday}\n`;
                 }
                 if (userProfile.zodiac) {
-                    systemPrompt += `- 星座：${userProfile.zodiac}\n`;
+                    systemPrompt += `- 星座:${userProfile.zodiac}\n`;
                 }
             }
 
@@ -2180,7 +2183,7 @@ Important tips:
                     console.log('[渲染] 使用 Marked 解析 Markdown');
                     messageContent.innerHTML = marked.parse(content);
                 } else {
-                    console.warn('[渲染] Marked 未加载，使用备用方案');
+                    console.warn('[渲染] Marked 未加载,使用备用方案');
                     const formattedContent = content
                         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                         .replace(/\*(.+?)\*/g, '<em>$1</em>')
@@ -2221,8 +2224,8 @@ Important tips:
                 .replace(/`(.+?)`/g, '$1')
                 .replace(/\n\s*\n\s*\n/g, '\n\n')
                 .replace(/^\s+/gm, '')
-                .replace(/([。！？])\s*\n\s*([^\n])/g, '$1 $2')
-                .replace(/：\s*\n\s*/g, '：')
+                .replace(/([。!?])\s*\n\s*([^\n])/g, '$1 $2')
+                .replace(/:\s*\n\s*/g, ':')
                 .replace(/(.{10,})\1+/g, '$1')
                 .replace(/(梦见[^\n]+)\s*\n\s*\1/g, '$1');
         }
