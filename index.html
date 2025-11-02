@@ -1345,7 +1345,9 @@
 重要提示：
 - 不要分太多段落，一个主题说完再说下一个
 - 避免使用小标题式的分行
-- 保持像真人聊天一样的段落长度`;
+- 保持像真人聊天一样的段落长度
+- 不要重复相同的标题或句子（比如"梦见猴子"说两遍）
+- 每个主题只介绍一次即可`;
             } else {
                 const timeOfDay = hour >= 6 && hour < 12 ? 'morning' :
                                 hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
@@ -1388,7 +1390,9 @@ Remember: You're texting on WhatsApp, not writing a report. Plain text, natural 
 Important tips:
 - Don't break into too many paragraphs, finish one topic then move to the next
 - Avoid title-like line breaks
-- Keep paragraph lengths similar to real human chat`;
+- Keep paragraph lengths similar to real human chat
+- Don't repeat the same titles or sentences
+- Introduce each topic only once`;
             }
         }
 
@@ -2105,7 +2109,11 @@ Important tips:
                 // 确保中文段落之间只有一个换行
                 .replace(/([。！？])\s*\n\s*([^\n])/g, '$1 $2')
                 // 处理标题后的换行
-                .replace(/：\s*\n\s*/g, '：');
+                .replace(/：\s*\n\s*/g, '：')
+                // 🔥 新增：去除重复的句子或短语（避免RAG导致的重复）
+                .replace(/(.{10,})\1+/g, '$1')
+                // 去除重复的标题行
+                .replace(/(梦见[^\n]+)\s*\n\s*\1/g, '$1');
         }
 
         // 添加消息到聊天界面
