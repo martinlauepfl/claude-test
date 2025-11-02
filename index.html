@@ -2160,14 +2160,55 @@ Important tips:
 
             chatContainer.appendChild(messageDiv);
 
-            // 🔥 修改：AI 回复先清理 Markdown
+            // 🔥 修改：AI 回复保留格式
             if (role === 'assistant') {
-                const cleanedContent = cleanMarkdown(content);
-                // 逐字显示 (打字效果)
-                for (let i = 0; i < cleanedContent.length; i++) {
-                    messageContent.textContent += cleanedContent[i];
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                    await new Promise(resolve => setTimeout(resolve, 30)); // 30ms每个字符
+                // 先准备内容，保留换行
+                let displayContent = '';
+                const paragraphs = content.split('\n\n');
+
+                for (let p = 0; p < paragraphs.length; p++) {
+                    const paragraph = paragraphs[p];
+                    if (p > 0) {
+                        displayContent += '</p><p>';
+                    }
+                    displayContent += paragraph.replace(/\n/g, '<br>');
+                }
+
+                displayContent = '<p>' + displayContent + '</p>';
+
+                // 逐字显示 HTML 内容
+                let htmlIndex = 0;
+                const tempDiv = document.createElement('div');
+
+                while (htmlIndex < displayContent.length) {
+                    // 找到下一个标签或文本
+                    if (displayContent[htmlIndex] === '<') {
+                        // 处理标签
+                        const tagEnd = displayContent.indexOf('>', htmlIndex);
+                        if (tagEnd === -1) break;
+
+                        const tag = displayContent.substring(htmlIndex, tagEnd + 1);
+                        htmlIndex = tagEnd + 1;
+
+                        tempDiv.innerHTML += tag;
+                        messageContent.innerHTML = tempDiv.innerHTML;
+                    } else {
+                        // 处理文本
+                        const nextTag = displayContent.indexOf('<', htmlIndex);
+                        const textEnd = nextTag === -1 ? displayContent.length : nextTag;
+
+                        const text = displayContent.substring(htmlIndex, textEnd);
+
+                        // 逐字符显示文本
+                        for (let i = 0; i < text.length; i++) {
+                            tempDiv.innerHTML += text[i];
+                            messageContent.innerHTML = tempDiv.innerHTML;
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                            await new Promise(resolve => setTimeout(resolve, 20));
+                        }
+
+                        htmlIndex = textEnd;
+                    }
                 }
             } else {
                 messageContent.textContent = content;
@@ -2222,10 +2263,16 @@ Important tips:
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
 
-            // 🔥 关键修改：AI 回复先清理 Markdown，再显示纯文本
+            // 🔥 关键修改：AI 回复保留换行格式
             if (role === 'assistant') {
-                const cleanedContent = cleanMarkdown(content);
-                messageContent.textContent = cleanedContent;
+                // 保留换行符，将 \n 转换为 <br>
+                const formattedContent = content
+                    .replace(/\n\n/g, '</p><p>')  // 双换行变段落
+                    .replace(/\n/g, '<br>')        // 单换行变<br>
+                    .replace(/^/, '<p>')         // 开头加<p>
+                    .replace(/$/, '</p>');        // 结尾加</p>
+
+                messageContent.innerHTML = formattedContent;
             } else {
                 messageContent.textContent = content;
             }
