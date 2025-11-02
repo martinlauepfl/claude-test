@@ -1105,6 +1105,7 @@
         let currentUser = null;
         let userQuota = null;
         let conversationHistory = [];
+        let userProfile = {}; // 存储用户的关键信息（姓名、生日等）
         let currentLanguage = localStorage.getItem('language') || null; // 先设为null，等待IP检测
 
         // 多语言配置
@@ -1396,6 +1397,78 @@ Important tips:
             }
         }
 
+        // 🔥 新增：从对话中提取用户关键信息
+        function extractUserInfo(message) {
+            const patterns = {
+                name: [
+                    /我叫([^\s，。！？]{1,10})/g,
+                    /我是([^\s，。！？]{1,10})/g,
+                    /我姓([^\s，。！？]{1,5})/g
+                ],
+                birthday: [
+                    /生日是(\d{4}年\d{1,2}月\d{1,2}日)/g,
+                    /(\d{4}年\d{1,2}月\d{1,2}日)出生/g,
+                    /生日(\d{1,2}月\d{1,2}日)/g
+                ],
+                zodiac: [
+                    /(白羊座|金牛座|双子座|巨蟹座|狮子座|处女座|天秤座|天蝎座|射手座|摩羯座|水瓶座|双鱼座)/g
+                ]
+            };
+
+            // 提取姓名
+            patterns.name.forEach(pattern => {
+                const matches = message.match(pattern);
+                if (matches) {
+                    matches.forEach(match => {
+                        const name = match.replace(/我叫|我是|我姓/g, '');
+                        if (name.length > 0 && name.length <= 10 && !name.match(/[0-9]/)) {
+                            userProfile.name = name;
+                            saveUserProfile();
+                            console.log('记住用户姓名:', name);
+                        }
+                    });
+                }
+            });
+
+            // 提取生日
+            patterns.birthday.forEach(pattern => {
+                const match = message.match(pattern);
+                if (match) {
+                    userProfile.birthday = match[0];
+                    saveUserProfile();
+                    console.log('记住用户生日:', match[0]);
+                }
+            });
+
+            // 提取星座
+            patterns.zodiac.forEach(pattern => {
+                const match = message.match(pattern);
+                if (match) {
+                    userProfile.zodiac = match[0];
+                    saveUserProfile();
+                    console.log('记住用户星座:', match[0]);
+                }
+            });
+        }
+
+        // 保存用户信息到localStorage
+        function saveUserProfile() {
+            if (currentUser) {
+                localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+            }
+        }
+
+        // 加载用户信息
+        function loadUserProfile() {
+            if (currentUser) {
+                const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
+                if (saved) {
+                    userProfile = JSON.parse(saved);
+                    console.log('加载用户信息:', userProfile);
+                }
+            }
+        }
+
         // 初始化
         async function init() {
             // 先检测用户语言（基于IP或localStorage）
@@ -1479,6 +1552,7 @@ Important tips:
             supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     currentUser = session.user;
+                    loadUserProfile(); // 加载用户信息
                     await loadUserQuota();
                     await loadChatHistory();
                     showUserInfo();
@@ -1907,6 +1981,9 @@ Important tips:
             const message = userInput.value.trim();
             if (!message) return;
 
+            // 🔥 提取用户信息
+            extractUserInfo(message);
+
             // 添加用户消息到历史
             conversationHistory.push({
                 role: 'user',
@@ -1976,10 +2053,27 @@ Important tips:
 
         // 调用 Supabase Edge Function（保护阿里云 API Key）- 返回完整内容
         async function callAPI() {
+            // 🔥 构建包含用户信息的系统提示
+            let systemPrompt = getSystemPrompt();
+
+            // 如果有用户信息，添加到系统提示中
+            if (Object.keys(userProfile).length > 0) {
+                systemPrompt += '\n\n用户信息（请记住并在合适时自然提及）：\n';
+                if (userProfile.name) {
+                    systemPrompt += `- 姓名：${userProfile.name}\n`;
+                }
+                if (userProfile.birthday) {
+                    systemPrompt += `- 生日：${userProfile.birthday}\n`;
+                }
+                if (userProfile.zodiac) {
+                    systemPrompt += `- 星座：${userProfile.zodiac}\n`;
+                }
+            }
+
             const messages = [
                 {
                     role: 'system',
-                    content: getSystemPrompt()
+                    content: systemPrompt
                 },
                 ...conversationHistory
             ];
