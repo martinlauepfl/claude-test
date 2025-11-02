@@ -300,6 +300,58 @@
             font-size: 0.9em;
         }
 
+        /* Markdown 标题样式 */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 1em 0 0.5em 0;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.1em; }
+
+        .message-content h1:first-child,
+        .message-content h2:first-child,
+        .message-content h3:first-child {
+            margin-top: 0;
+        }
+
+        /* 改进列表样式 */
+        .message-content ul {
+            list-style-type: none;
+            padding-left: 1.2em;
+        }
+
+        .message-content ul li {
+            position: relative;
+            padding-left: 1.2em;
+        }
+
+        .message-content ul li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #fb923c;
+            font-weight: bold;
+        }
+
+        .message-content ol {
+            padding-left: 1.5em;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .message-content {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+
+            .message-content h1 { font-size: 1.4em; }
+            .message-content h2 { font-size: 1.25em; }
+            .message-content h3 { font-size: 1.1em; }
+        }
+
         .message.user .message-content {
             background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(245, 158, 11, 0.12) 100%);
             backdrop-filter: blur(10px);
@@ -1079,6 +1131,18 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script>
+        // 验证 marked 是否正确加载
+        console.log('Marked version:', marked ? marked.parse('test') : 'Marked not loaded');
+
+        // 配置 marked 选项
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,  // 支持换行符
+                gfm: true,     // GitHub Flavored Markdown
+                sanitize: false // 允许HTML（因为我们信任AI输出）
+            });
+        }
+
         // Supabase Edge Function API 地址（使用RAG版本）
         const WORKER_API_URL = 'https://mulrkyqqhaustbojzzes.supabase.co/functions/v1/ai-chat-with-rag';
 
@@ -2263,16 +2327,24 @@ Important tips:
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
 
-            // 🔥 关键修改：AI 回复保留换行格式
+            // 🔥 关键修改：AI 回复使用 marked 解析 Markdown
             if (role === 'assistant') {
-                // 保留换行符，将 \n 转换为 <br>
-                const formattedContent = content
-                    .replace(/\n\n/g, '</p><p>')  // 双换行变段落
-                    .replace(/\n/g, '<br>')        // 单换行变<br>
-                    .replace(/^/, '<p>')         // 开头加<p>
-                    .replace(/$/, '</p>');        // 结尾加</p>
-
-                messageContent.innerHTML = formattedContent;
+                // 使用 marked.parse 将 Markdown 转换为 HTML
+                if (typeof marked !== 'undefined') {
+                    console.log('Using marked to parse content:', content.substring(0, 100));
+                    messageContent.innerHTML = marked.parse(content);
+                } else {
+                    // 如果 marked 未加载，使用备用方案
+                    console.log('Marked not available, using fallback');
+                    const formattedContent = content
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // 粗体
+                        .replace(/### (.+)/g, '<h3>$1</h3>')            // h3标题
+                        .replace(/\n\n/g, '</p><p>')                   // 段落
+                        .replace(/\n/g, '<br>')                         // 换行
+                        .replace(/^/, '<p>')                           // 开头
+                        .replace(/$/, '</p>');                         // 结尾
+                    messageContent.innerHTML = formattedContent;
+                }
             } else {
                 messageContent.textContent = content;
             }
