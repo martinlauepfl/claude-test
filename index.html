@@ -373,31 +373,6 @@
             z-index: 10;
         }
 
-        /* 移动端输入区域固定 */
-        @media (max-width: 768px) {
-            .input-area {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: rgba(26, 20, 16, 0.98);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                padding: max(16px, env(safe-area-inset-bottom) + 8px) 16px 16px 16px;
-                border-top: 1px solid rgba(255, 255, 255, 0.2);
-            }
-
-            /* 为主容器添加底部内边距，避免被输入框遮挡 */
-            body {
-                padding-bottom: 80px;
-            }
-
-            /* 聊天容器需要考虑固定的输入框 */
-            .chat-container {
-                padding-bottom: 120px !important;
-            }
-        }
-
         .input-container {
             max-width: 800px;
             margin: 0 auto;
@@ -419,6 +394,14 @@
             background: rgba(255, 255, 255, 0.95);
             color: #1f2937;
             transition: all 0.3s ease;
+        }
+
+        /* Placeholder 样式 - 支持换行 */
+        .input-box::placeholder {
+            color: #9ca3af;
+            white-space: pre-wrap; /* 允许换行 */
+            word-wrap: break-word; /* 长单词换行 */
+            overflow-wrap: break-word; /* 确保换行 */
         }
 
         .input-box:focus {
@@ -543,19 +526,6 @@
             line-height: 1.8;
             max-width: 500px;
             margin: 0 auto;
-        }
-        /* 移动端欢迎消息优化 */
-        @media (max-width: 768px) {
-            .welcome-message {
-                padding: 50px 20px;
-            }
-            .welcome-message h2 {
-                font-size: 24px;
-                margin-bottom: 16px;
-            }
-            .welcome-message p {
-                font-size: 15px;
-            }
         }
 
         /* 登录/注册模态框 */
@@ -848,23 +818,24 @@
             .chat-container {
                 padding: 20px 12px;
                 gap: 16px;
+                padding-bottom: 120px !important;
             }
+
             .input-container {
                 max-width: 100%;
             }
+
             .input-box {
                 font-size: 16px; /* 防止iOS缩放 */
-                padding: 12px 50px 12px 16px;
-            }
-            .send-button {
-                right: 8px;
-                width: 40px;
-                height: 40px;
+                padding-right: 60px !important;
             }
 
             /* 消息气泡优化 */
             .message {
                 max-width: 90%;
+            }
+
+            .message-content {
                 padding: 12px 16px;
                 font-size: 15px;
                 line-height: 1.6;
@@ -878,12 +849,53 @@
                 margin-right: 10%;
             }
 
-            /* 输入区域优化 */
-            .input-container {
-                padding: 12px;
-                gap: 8px;
+            /* 欢迎消息优化 */
+            .welcome-message {
+                padding: 50px 20px;
             }
 
+            .welcome-message h2 {
+                font-size: 24px;
+                margin-bottom: 16px;
+            }
+
+            .welcome-message p {
+                font-size: 15px;
+            }
+
+            /* 🔥🔥🔥 移动端输入区域固定 + 发送按钮垂直居中修复 */
+            .input-area {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                padding: max(16px, env(safe-area-inset-bottom) + 8px) 16px 16px 16px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            body {
+                padding-bottom: 80px;
+            }
+
+            .input-container {
+                position: relative;
+            }
+
+            /* 🔥 关键修复：发送按钮垂直居中 */
+            .send-button {
+                position: absolute !important;
+                right: 12px !important;
+                top: 50% !important;
+                bottom: auto !important;  /* 👈 取消 bottom 定位 */
+                transform: translateY(-50%) !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            /* 输入区域优化 */
             .input-container input {
                 font-size: 16px !important; /* 防止 iOS 自动缩放 */
                 padding: 12px 16px;
@@ -923,11 +935,11 @@
             }
 
             /* 支付模态框优化 */
-            .price {
+            .payment-price {
                 font-size: 28px;
             }
 
-            .quota-info {
+            .payment-desc {
                 font-size: 15px;
             }
 
@@ -939,12 +951,12 @@
             }
 
             /* 邮箱验证横幅 */
-            .email-verification-banner {
+            .verification-banner {
                 padding: 10px 16px;
                 font-size: 13px;
             }
 
-            .email-verification-banner button {
+            .verification-banner button {
                 padding: 6px 12px;
                 font-size: 12px;
             }
@@ -962,6 +974,9 @@
 
             .message {
                 font-size: 14px;
+            }
+
+            .message-content {
                 padding: 10px 14px;
             }
 
@@ -974,7 +989,7 @@
                 padding: 20px 16px;
             }
 
-            .price {
+            .payment-price {
                 font-size: 24px;
             }
         }
@@ -1107,7 +1122,7 @@
                 <button type="submit" class="btn-primary" id="loginSubmitBtn">登录</button>
             </form>
             <div class="modal-footer">
-                <span id="loginFooterText">还没有账号？</span><a class="modal-link" onclick="showRegisterModal()" id="loginFooterLink">立即注册</a>
+                <span id="loginFooterText">还没有账号?</span><a class="modal-link" onclick="showRegisterModal()" id="loginFooterLink">立即注册</a>
             </div>
         </div>
     </div>
@@ -1164,9 +1179,9 @@
         // 配置 marked 选项
         if (typeof marked !== 'undefined') {
             marked.setOptions({
-                breaks: true,  // 支持换行符
-                gfm: true,     // GitHub Flavored Markdown
-                sanitize: false // 允许HTML（因为我们信任AI输出）
+                breaks: true,
+                gfm: true,
+                sanitize: false
             });
         }
 
@@ -1177,7 +1192,7 @@
         const userInput = document.getElementById('userInput');
         const sendButton = document.getElementById('sendButton');
 
-        // Supabase 配置 (anon key 可以安全地暴露在前端)
+        // Supabase 配置
         const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
@@ -1188,16 +1203,15 @@
             }
         });
 
-        // Stripe 配置（生产模式）
+        // Stripe 配置
         const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SJTJ8PCdo22g31uLFcc8RAq7C3K11KpQGC8V9ktNQHydPpxMgCdAwb9uBK3QiKeW1bwo2TuIGYPYMlkZKfTOsh900PhhrrubA';
         const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-        // 用户数据管理
         let currentUser = null;
         let userQuota = null;
         let conversationHistory = [];
-        let userProfile = {}; // 存储用户的关键信息（姓名、生日等）
-        let currentLanguage = localStorage.getItem('language') || null; // 先设为null，等待IP检测
+        let userProfile = {};
+        let currentLanguage = localStorage.getItem('language') || null;
 
         // 多语言配置
         const i18n = {
@@ -1291,25 +1305,20 @@
             }
         };
 
-        // 获取当前语言的文本
         function t(key) {
             return i18n[currentLanguage][key] || key;
         }
 
-        // 检测用户IP并设置默认语言
         async function detectUserLanguage() {
-            // 如果用户已经手动选择过语言，使用保存的语言
             const savedLanguage = localStorage.getItem('language');
             if (savedLanguage) {
                 currentLanguage = savedLanguage;
                 return;
             }
 
-            // 先尝试从浏览器语言判断
             const browserLang = navigator.language || navigator.userLanguage;
             const isChinese = browserLang.toLowerCase().startsWith('zh');
 
-            // 尝试IP检测（3秒超时）
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -1321,7 +1330,6 @@
 
                 const data = await response.json();
 
-                // 如果是中国IP，使用中文；否则使用英文
                 if (data.country_code === 'CN') {
                     currentLanguage = 'zh';
                 } else {
@@ -1330,20 +1338,17 @@
 
                 console.log('Detected country:', data.country_name, '- Language:', currentLanguage);
             } catch (error) {
-                // IP检测失败时，根据浏览器语言判断，默认中文
                 console.log('IP detection failed, using browser language:', browserLang);
-                currentLanguage = isChinese ? 'zh' : 'zh'; // 默认中文，更符合目标用户
+                currentLanguage = isChinese ? 'zh' : 'zh';
             }
         }
 
-        // 切换语言
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
             localStorage.setItem('language', currentLanguage);
             updateUILanguage();
         }
 
-        // 更新UI语言
         function updateUILanguage() {
             document.getElementById('appTitle').textContent = t('appTitle');
             document.getElementById('langToggle').textContent = t('langToggle');
@@ -1353,7 +1358,6 @@
             document.getElementById('verifyText').textContent = t('verifyText');
             document.getElementById('resendLink').textContent = t('resendLink');
 
-            // 更新欢迎消息（如果存在）
             const welcomeTitle = document.getElementById('welcomeTitle');
             const welcomeDesc = document.getElementById('welcomeDesc');
             if (welcomeTitle) welcomeTitle.textContent = t('welcomeTitle');
@@ -1380,17 +1384,11 @@
             document.getElementById('paymentCancelBtn').textContent = t('paymentCancelBtn');
             document.getElementById('paymentPrice').innerHTML = currentLanguage === 'zh' ? '<small>¥</small>9.99' : '<small>$</small>2.99';
 
-            // 更新配额显示
             updateQuotaBadge();
-
-            // 更新HTML lang属性
             document.documentElement.lang = currentLanguage === 'zh' ? 'zh-CN' : 'en';
-
-            // 更新页面标题
             document.title = currentLanguage === 'zh' ? 'AI算命大师' : 'AI Fortune Teller';
         }
 
-        // 🔥🔥🔥 关键修改：优化后的 System Prompt（禁止 Markdown 格式）
         function getSystemPrompt() {
             const now = new Date();
             const hour = now.getHours();
@@ -1488,7 +1486,6 @@ Important tips:
             }
         }
 
-        // 🔥 新增：从对话中提取用户关键信息
         function extractUserInfo(message) {
             const patterns = {
                 name: [
@@ -1506,7 +1503,6 @@ Important tips:
                 ]
             };
 
-            // 提取姓名
             patterns.name.forEach(pattern => {
                 const matches = message.match(pattern);
                 if (matches) {
@@ -1521,7 +1517,6 @@ Important tips:
                 }
             });
 
-            // 提取生日
             patterns.birthday.forEach(pattern => {
                 const match = message.match(pattern);
                 if (match) {
@@ -1531,7 +1526,6 @@ Important tips:
                 }
             });
 
-            // 提取星座
             patterns.zodiac.forEach(pattern => {
                 const match = message.match(pattern);
                 if (match) {
@@ -1542,14 +1536,12 @@ Important tips:
             });
         }
 
-        // 保存用户信息到localStorage
         function saveUserProfile() {
             if (currentUser) {
                 localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
             }
         }
 
-        // 加载用户信息
         function loadUserProfile() {
             if (currentUser) {
                 const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
@@ -1560,25 +1552,18 @@ Important tips:
             }
         }
 
-        // 初始化
         async function init() {
-            // 先检测用户语言（基于IP或localStorage）
             await detectUserLanguage();
-
-            // 初始化语言设置
             updateUILanguage();
 
-            // 检查 URL 参数，处理支付回调
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
 
-            // 检查是否有登录会话,并验证会话有效性
             try {
                 const { data: { session }, error } = await supabase.auth.getSession();
 
                 if (error) {
                     console.error('获取会话失败:', error);
-                    // 清除可能损坏的会话 (静默模式,不抛出错误)
                     try {
                         await supabase.auth.signOut();
                     } catch (e) {
@@ -1600,7 +1585,6 @@ Important tips:
                         console.log('用户信息已显示');
                     } catch (loadError) {
                         console.error('加载用户数据失败:', loadError);
-                        // 即使加载失败,也显示用户信息(可能是新用户还没有配额记录)
                         if (!userQuota) {
                             userQuota = { quota: 0 };
                         }
@@ -1613,7 +1597,6 @@ Important tips:
                 }
             } catch (err) {
                 console.error('初始化会话时出错:', err);
-                // 清除可能的缓存问题 (静默模式)
                 try {
                     await supabase.auth.signOut();
                 } catch (e) {
@@ -1623,27 +1606,22 @@ Important tips:
                 return;
             }
 
-            // 继续处理支付回调
             if (currentUser && paymentStatus) {
                 if (paymentStatus === 'success') {
-                    // 支付成功，刷新配额
                     await loadUserQuota();
                     updateQuotaBadge();
                     alert(currentLanguage === 'zh' ? '支付成功！已为您增加 50 次对话。' : 'Payment successful! 50 conversations added to your account.');
-                    // 清除 URL 参数
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } else if (paymentStatus === 'cancel') {
                     alert(currentLanguage === 'zh' ? '支付已取消。' : 'Payment cancelled.');
-                    // 清除 URL 参数
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             }
 
-            // 监听认证状态变化
             supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     currentUser = session.user;
-                    loadUserProfile(); // 加载用户信息
+                    loadUserProfile();
                     await loadUserQuota();
                     await loadChatHistory();
                     showUserInfo();
@@ -1656,7 +1634,6 @@ Important tips:
             });
         }
 
-        // 加载聊天历史
         async function loadChatHistory() {
             if (!currentUser) return;
 
@@ -1666,22 +1643,19 @@ Important tips:
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: true })
-                    .limit(50); // 只加载最近50条
+                    .limit(50);
 
                 if (error) {
                     console.error('加载聊天历史失败:', error);
                     return;
                 }
 
-                // 登录后总是移除欢迎消息，让用户可以开始对话
                 const welcomeMessage = chatContainer.querySelector('.welcome-message');
                 if (welcomeMessage) {
                     welcomeMessage.remove();
                 }
 
                 if (data && data.length > 0) {
-
-                    // 显示历史消息
                     data.forEach(msg => {
                         if (msg.role !== 'system') {
                             addMessage(msg.content, msg.role);
@@ -1697,7 +1671,6 @@ Important tips:
             }
         }
 
-        // 保存消息到数据库
         async function saveChatMessage(role, content) {
             if (!currentUser) return;
 
@@ -1718,7 +1691,6 @@ Important tips:
             }
         }
 
-        // 清空聊天显示
         function clearChatDisplay() {
             chatContainer.innerHTML = `
                 <div id="verificationBanner" class="verification-banner" style="display: none;">
@@ -1733,7 +1705,6 @@ Important tips:
             `;
         }
 
-        // 加载用户配额
         async function loadUserQuota() {
             const { data, error } = await supabase
                 .from('user_quotas')
@@ -1749,7 +1720,6 @@ Important tips:
             userQuota = data;
         }
 
-        // 显示用户信息
         function showUserInfo() {
             document.getElementById('userInfo').style.display = 'flex';
             document.getElementById('username').textContent = currentUser.email.split('@')[0];
@@ -1757,7 +1727,6 @@ Important tips:
             checkEmailVerification();
         }
 
-        // 检查邮箱是否已验证
         function checkEmailVerification() {
             if (currentUser && !currentUser.email_confirmed_at) {
                 document.getElementById('verificationBanner').style.display = 'block';
@@ -1766,7 +1735,6 @@ Important tips:
             }
         }
 
-        // 重新发送验证邮件
         async function resendVerificationEmail() {
             if (!currentUser) return;
 
@@ -1782,27 +1750,23 @@ Important tips:
             }
         }
 
-        // 更新剩余次数显示
         function updateQuotaBadge() {
             const quota = userQuota ? userQuota.quota : 0;
             document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quota}`;
         }
 
-        // 显示登录模态框
         function showLoginModal() {
             document.getElementById('loginModal').classList.add('active');
             document.getElementById('registerModal').classList.remove('active');
             document.getElementById('loginError').textContent = '';
         }
 
-        // 显示注册模态框
         function showRegisterModal() {
             document.getElementById('registerModal').classList.add('active');
             document.getElementById('loginModal').classList.remove('active');
             document.getElementById('registerError').textContent = '';
         }
 
-        // 处理登录
         async function handleLogin(event) {
             event.preventDefault();
             console.log('=== 开始登录流程 ===');
@@ -1814,14 +1778,12 @@ Important tips:
 
             console.log('登录邮箱:', email);
 
-            // 显示加载状态
             submitBtn.disabled = true;
             submitBtn.textContent = currentLanguage === 'zh' ? '登录中...' : 'Logging in...';
             loginError.textContent = '';
 
             try {
                 console.log('调用 signInWithPassword...');
-                // 执行登录
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -1844,7 +1806,6 @@ Important tips:
                     return;
                 }
 
-                // 登录成功
                 console.log('登录成功,用户ID:', data.user.id);
                 currentUser = data.user;
 
@@ -1854,11 +1815,9 @@ Important tips:
                 console.log('加载聊天历史...');
                 await loadChatHistory();
 
-                // 恢复按钮状态
                 submitBtn.disabled = false;
                 submitBtn.textContent = t('loginSubmitBtn');
 
-                // 关闭登录框
                 console.log('关闭登录框...');
                 document.getElementById('loginModal').classList.remove('active');
                 showUserInfo();
@@ -1871,7 +1830,6 @@ Important tips:
             }
         }
 
-        // 处理注册
         async function handleRegister(event) {
             event.preventDefault();
             const email = document.getElementById('registerUsername').value;
@@ -1896,11 +1854,9 @@ Important tips:
                 return;
             }
 
-            // 显示成功消息
             document.getElementById('registerError').className = 'success-message';
             document.getElementById('registerError').textContent = t('successRegister');
 
-            // 3秒后关闭注册框并显示登录框
             setTimeout(() => {
                 document.getElementById('registerModal').classList.remove('active');
                 showLoginModal();
@@ -1909,7 +1865,6 @@ Important tips:
             }, 3000);
         }
 
-        // 清空所有聊天记录
         async function clearAllHistory() {
             if (!currentUser) return;
 
@@ -1917,7 +1872,6 @@ Important tips:
             if (!confirmed) return;
 
             try {
-                // 从数据库删除所有聊天记录
                 const { error } = await supabase
                     .from('chat_messages')
                     .delete()
@@ -1929,7 +1883,6 @@ Important tips:
                     return;
                 }
 
-                // 清空本地聊天历史
                 conversationHistory = [];
                 clearChatDisplay();
 
@@ -1940,7 +1893,6 @@ Important tips:
             }
         }
 
-        // 退出登录
         async function logout() {
             await supabase.auth.signOut();
             currentUser = null;
@@ -1961,25 +1913,20 @@ Important tips:
             showLoginModal();
         }
 
-        // 显示支付模态框
         function showPaymentModal() {
             document.getElementById('paymentModal').classList.add('active');
         }
 
-        // 关闭支付模态框
         function closePaymentModal() {
             document.getElementById('paymentModal').classList.remove('active');
         }
 
-        // 处理支付（使用 Stripe）
         async function handlePayment() {
             try {
-                // 禁用支付按钮，防止重复点击
                 const paymentBtn = document.getElementById('paymentBtn');
                 paymentBtn.disabled = true;
                 paymentBtn.textContent = currentLanguage === 'zh' ? '处理中...' : 'Processing...';
 
-                // 调用 Supabase Edge Function 创建 Stripe Checkout Session
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-checkout`, {
                     method: 'POST',
                     headers: {
@@ -1999,7 +1946,6 @@ Important tips:
 
                 const { sessionId } = await response.json();
 
-                // 跳转到 Stripe Checkout 页面
                 const { error } = await stripe.redirectToCheckout({ sessionId });
 
                 if (error) {
@@ -2010,14 +1956,12 @@ Important tips:
                 console.error('Payment error:', error);
                 alert(t('paymentError'));
 
-                // 恢复按钮状态
                 const paymentBtn = document.getElementById('paymentBtn');
                 paymentBtn.disabled = false;
                 paymentBtn.textContent = t('paymentBtn');
             }
         }
 
-        // 检查是否有剩余次数
         function checkQuota() {
             if (!userQuota || userQuota.quota <= 0) {
                 showPaymentModal();
@@ -2026,7 +1970,6 @@ Important tips:
             return true;
         }
 
-        // 扣除次数
         async function deductQuota() {
             if (!userQuota) {
                 console.error('配额数据未加载');
@@ -2052,13 +1995,11 @@ Important tips:
             updateQuotaBadge();
         }
 
-        // 自动调整输入框高度
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
 
-        // 发送消息（支持打字动画）
         async function sendMessage() {
             if (!currentUser) {
                 showLoginModal();
@@ -2072,59 +2013,45 @@ Important tips:
             const message = userInput.value.trim();
             if (!message) return;
 
-            // 🔥 提取用户信息
             extractUserInfo(message);
 
-            // 添加用户消息到历史
             conversationHistory.push({
                 role: 'user',
                 content: message
             });
 
-            // 保存用户消息到数据库
             await saveChatMessage('user', message);
 
-            // 添加用户消息
             addMessage(message, 'user');
             userInput.value = '';
             userInput.style.height = 'auto';
 
-            // 禁用输入
             sendButton.disabled = true;
             userInput.disabled = true;
 
-            // 移除欢迎消息
             const welcomeMessage = chatContainer.querySelector('.welcome-message');
             if (welcomeMessage) {
                 welcomeMessage.remove();
             }
 
-            // 显示加载动画
             const loadingId = addLoadingMessage();
 
             try {
-                // 调用 API 获取完整响应
                 const response = await callAPI();
 
-                // 移除加载动画
                 removeMessage(loadingId);
 
-                // 添加带打字效果的 AI 回复
                 await addMessageWithTyping(response, 'assistant');
 
-                // 添加 AI 回复到历史
                 conversationHistory.push({
                     role: 'assistant',
                     content: response
                 });
 
-                // 保存 AI 回复到数据库
                 await saveChatMessage('assistant', response);
 
-                // 只有成功获得回复才扣除次数
                 await deductQuota();
             } catch (error) {
-                // API 调用失败，移除加载动画并显示错误
                 removeMessage(loadingId);
                 const errorMsg = t('apiError');
                 conversationHistory.push({
@@ -2135,25 +2062,19 @@ Important tips:
                 console.error('API调用失败:', error);
                 console.error('错误详情:', error.message);
                 console.error('错误堆栈:', error.stack);
-                // 显示具体错误给用户（开发模式）
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) {
                     addMessageWithTyping(`调试信息: ${error.message}`, 'assistant');
                 }
-                // 注意：失败时不扣除次数，也不保存到数据库
             }
 
-            // 启用输入
             sendButton.disabled = false;
             userInput.disabled = false;
             userInput.focus();
         }
 
-        // 调用 Supabase Edge Function（保护阿里云 API Key）- 返回完整内容
         async function callAPI() {
-            // 🔥 构建包含用户信息的系统提示
             let systemPrompt = getSystemPrompt();
 
-            // 如果有用户信息，添加到系统提示中
             if (Object.keys(userProfile).length > 0) {
                 systemPrompt += '\n\n用户信息（请记住并在合适时自然提及）：\n';
                 if (userProfile.name) {
@@ -2193,11 +2114,9 @@ Important tips:
                 throw new Error('API请求失败');
             }
 
-            // 检查响应类型
             const contentType = response.headers.get('content-type');
 
             if (contentType && contentType.includes('text/event-stream')) {
-                // 处理流式响应
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder('utf-8');
                 let fullContent = '';
@@ -2221,7 +2140,6 @@ Important tips:
                                     fullContent += content;
                                 }
                             } catch (e) {
-                                // 忽略解析错误
                             }
                         }
                     }
@@ -2229,110 +2147,86 @@ Important tips:
 
                 return fullContent;
             } else {
-                // 处理普通 JSON 响应（兼容旧版 Edge Function）
                 const data = await response.json();
                 return data.choices[0].message.content;
             }
         }
 
-// 添加带淡入动画的消息（方案 B：完美 Markdown 渲染）
-async function addMessageWithTyping(content, role) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${role}`;
+        async function addMessageWithTyping(content, role) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role}`;
 
-    const avatar = document.createElement('div');
-    avatar.className = `avatar ${role}`;
-    avatar.textContent = role === 'user' ? '👤' : '🔮';
+            const avatar = document.createElement('div');
+            avatar.className = `avatar ${role}`;
+            avatar.textContent = role === 'user' ? '👤' : '🔮';
 
-    const messageContent = document.createElement('div');
-    messageContent.className = 'message-content';
+            const messageContent = document.createElement('div');
+            messageContent.className = 'message-content';
 
-    if (role === 'user') {
-        messageDiv.appendChild(messageContent);
-        messageDiv.appendChild(avatar);
-    } else {
-        messageDiv.appendChild(avatar);
-        messageDiv.appendChild(messageContent);
-    }
+            if (role === 'user') {
+                messageDiv.appendChild(messageContent);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+            }
 
-    chatContainer.appendChild(messageDiv);
+            chatContainer.appendChild(messageDiv);
 
-    // 🔥 AI 回复：使用 Marked 解析 + 淡入动画
-    if (role === 'assistant') {
-        // 先隐藏内容
-        messageContent.style.opacity = '0';
-        
-        // 解析 Markdown
-        if (typeof marked !== 'undefined') {
-            console.log('[渲染] 使用 Marked 解析 Markdown');
-            messageContent.innerHTML = marked.parse(content);
-        } else {
-            // 备用方案：手动处理基本 Markdown
-            console.warn('[渲染] Marked 未加载，使用备用方案');
-            const formattedContent = content
-                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // 粗体
-                .replace(/\*(.+?)\*/g, '<em>$1</em>')              // 斜体
-                .replace(/### (.+)/g, '<h3>$1</h3>')               // h3
-                .replace(/## (.+)/g, '<h2>$1</h2>')                // h2
-                .replace(/# (.+)/g, '<h1>$1</h1>')                 // h1
-                .replace(/\n\n/g, '</p><p>')                       // 段落
-                .replace(/\n/g, '<br>')                            // 换行
-                .replace(/^/, '<p>')                               // 开头
-                .replace(/$/, '</p>');                             // 结尾
-            messageContent.innerHTML = formattedContent;
+            if (role === 'assistant') {
+                messageContent.style.opacity = '0';
+                
+                if (typeof marked !== 'undefined') {
+                    console.log('[渲染] 使用 Marked 解析 Markdown');
+                    messageContent.innerHTML = marked.parse(content);
+                } else {
+                    console.warn('[渲染] Marked 未加载，使用备用方案');
+                    const formattedContent = content
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                        .replace(/### (.+)/g, '<h3>$1</h3>')
+                        .replace(/## (.+)/g, '<h2>$1</h2>')
+                        .replace(/# (.+)/g, '<h1>$1</h1>')
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br>')
+                        .replace(/^/, '<p>')
+                        .replace(/$/, '</p>');
+                    messageContent.innerHTML = formattedContent;
+                }
+                
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+                messageContent.style.transition = 'opacity 0.6s ease-in';
+                messageContent.style.opacity = '1';
+                
+            } else {
+                messageContent.textContent = content;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+
+            return messageDiv;
         }
-        
-        // 滚动到底部
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-        
-        // 淡入动画
-        await new Promise(resolve => setTimeout(resolve, 100));
-        messageContent.style.transition = 'opacity 0.6s ease-in';
-        messageContent.style.opacity = '1';
-        
-    } else {
-        // 用户消息直接显示
-        messageContent.textContent = content;
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
 
-    return messageDiv;
-}
-
-        // 🔥 新增：清理 Markdown 格式的函数（兜底保护）
         function cleanMarkdown(text) {
             return text
-                // 移除粗体 **text** → text
                 .replace(/\*\*(.+?)\*\*/g, '$1')
-                // 移除斜体 *text* → text
                 .replace(/\*(.+?)\*/g, '$1')
-                // 移除标题 ## text → text
                 .replace(/^#{1,6}\s+/gm, '')
-                // 移除有序列表 1. text → text
                 .replace(/^\d+\.\s+/gm, '')
-                // 移除无序列表 - text 或 * text → text
                 .replace(/^[-*+]\s+/gm, '')
-                // 移除代码块标记 ``` → 空
                 .replace(/```[\s\S]*?```/g, (match) => {
                     return match.replace(/```/g, '');
                 })
-                // 移除行内代码 `code` → code
                 .replace(/`(.+?)`/g, '$1')
-                // 🔥 优化：将多个连续换行替换为单个换行，让文本更紧凑
                 .replace(/\n\s*\n\s*\n/g, '\n\n')
-                // 移除段落开头的多余空格
                 .replace(/^\s+/gm, '')
-                // 确保中文段落之间只有一个换行
                 .replace(/([。！？])\s*\n\s*([^\n])/g, '$1 $2')
-                // 处理标题后的换行
                 .replace(/：\s*\n\s*/g, '：')
-                // 🔥 新增：去除重复的句子或短语（避免RAG导致的重复）
                 .replace(/(.{10,})\1+/g, '$1')
-                // 去除重复的标题行
                 .replace(/(梦见[^\n]+)\s*\n\s*\1/g, '$1');
         }
 
-        // 添加消息到聊天界面
         function addMessage(content, role) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
@@ -2344,7 +2238,6 @@ async function addMessageWithTyping(content, role) {
             const messageContent = document.createElement('div');
             messageContent.className = 'message-content';
 
-            // AI回复现在通过addMessageWithTyping处理，这里只需要简单显示
             messageContent.textContent = content;
 
             if (role === 'user') {
@@ -2366,7 +2259,6 @@ async function addMessageWithTyping(content, role) {
             return messageDiv;
         }
 
-        // 添加加载动画
         function addLoadingMessage() {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message assistant';
@@ -2388,7 +2280,6 @@ async function addMessageWithTyping(content, role) {
             return 'loading-message';
         }
 
-        // 移除消息
         function removeMessage(id) {
             const element = document.getElementById(id);
             if (element) {
@@ -2396,10 +2287,8 @@ async function addMessageWithTyping(content, role) {
             }
         }
 
-        // 发送按钮点击事件
         sendButton.addEventListener('click', sendMessage);
 
-        // 回车发送（Shift+回车换行）
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
@@ -2407,7 +2296,6 @@ async function addMessageWithTyping(content, role) {
             }
         });
 
-        // 页面加载时初始化
         init();
     </script>
 </body>
