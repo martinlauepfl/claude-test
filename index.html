@@ -1489,7 +1489,7 @@ Important tips:
             }
         }
 
-        function extractUserInfo(message) {
+        async function extractUserInfo(message) {
             const patterns = {
                 name: [
                     /我叫([^\s,。!?]{1,10})/g,
@@ -1506,6 +1506,9 @@ Important tips:
                 ]
             };
 
+            let hasUpdate = false;
+
+            // 提取姓名
             patterns.name.forEach(pattern => {
                 const matches = message.match(pattern);
                 if (matches) {
@@ -1513,44 +1516,92 @@ Important tips:
                         const name = match.replace(/我叫|我是|我姓/g, '');
                         if (name.length > 0 && name.length <= 10 && !name.match(/[0-9]/)) {
                             userProfile.name = name;
-                            saveUserProfile();
+                            hasUpdate = true;
                             console.log('记住用户姓名:', name);
                         }
                     });
                 }
             });
 
+            // 提取生日
             patterns.birthday.forEach(pattern => {
                 const match = message.match(pattern);
                 if (match) {
                     userProfile.birthday = match[0];
-                    saveUserProfile();
+                    hasUpdate = true;
                     console.log('记住用户生日:', match[0]);
                 }
             });
 
+            // 提取星座
             patterns.zodiac.forEach(pattern => {
                 const match = message.match(pattern);
                 if (match) {
                     userProfile.zodiac = match[0];
-                    saveUserProfile();
+                    hasUpdate = true;
                     console.log('记住用户星座:', match[0]);
                 }
             });
-        }
 
-        function saveUserProfile() {
-            if (currentUser) {
-                localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+            // 只在有更新时才保存
+            if (hasUpdate) {
+                await saveUserProfile();
             }
         }
 
-        function loadUserProfile() {
+        async function saveUserProfile() {
             if (currentUser) {
-                const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
-                if (saved) {
-                    userProfile = JSON.parse(saved);
-                    console.log('加载用户信息:', userProfile);
+                localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+
+                // 🔥 添加这个
+                try {
+                    await supabase.from('user_profiles').upsert({
+                        user_id: currentUser.id,
+                        name: userProfile.name || null,
+                        birthday: userProfile.birthday || null,
+                        zodiac: userProfile.zodiac || null
+                    });
+                    console.log('用户信息已同步到数据库');
+                } catch (error) {
+                    console.warn('同步用户信息到数据库失败:', error);
+                }
+            }
+        }
+
+        async function loadUserProfile() {
+            if (currentUser) {
+                try {
+                    // 🔥 先从数据库加载
+                    const { data, error } = await supabase
+                        .from('user_profiles')
+                        .select('name, birthday, zodiac')
+                        .eq('user_id', currentUser.id)
+                        .single();
+
+                    if (data && !error) {
+                        userProfile = {
+                            name: data.name,
+                            birthday: data.birthday,
+                            zodiac: data.zodiac
+                        };
+                        localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+                        console.log('从数据库加载用户信息:', userProfile);
+                    } else {
+                        // 降级到localStorage
+                        const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
+                        if (saved) {
+                            userProfile = JSON.parse(saved);
+                            console.log('从localStorage加载用户信息:', userProfile);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('加载用户信息失败，降级到localStorage:', error);
+                    // 降级到localStorage
+                    const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
+                    if (saved) {
+                        userProfile = JSON.parse(saved);
+                        console.log('从localStorage加载用户信息:', userProfile);
+                    }
                 }
             }
         }
@@ -1624,7 +1675,7 @@ Important tips:
             supabase.auth.onAuthStateChange(async (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     currentUser = session.user;
-                    loadUserProfile();
+                    await loadUserProfile();
                     await loadUserQuota();
                     await loadChatHistory();
                     showUserInfo();
@@ -2016,12 +2067,17 @@ Important tips:
             const message = userInput.value.trim();
             if (!message) return;
 
-            extractUserInfo(message);
+            await extractUserInfo(message);
 
             conversationHistory.push({
                 role: 'user',
                 content: message
             });
+
+            // 🔥 优化1: 限制长度
+            if (conversationHistory.length > 100) {
+                conversationHistory = conversationHistory.slice(-100);
+            }
 
             await saveChatMessage('user', message);
 
@@ -2050,6 +2106,11 @@ Important tips:
                     role: 'assistant',
                     content: response
                 });
+
+                // 🔥 优化1: 再次限制长度
+                if (conversationHistory.length > 100) {
+                    conversationHistory = conversationHistory.slice(-100);
+                }
 
                 await saveChatMessage('assistant', response);
 
@@ -2091,12 +2152,15 @@ Important tips:
                 }
             }
 
+            // 🔥 优化2: 只发最近20条
+            const recentMessages = conversationHistory.slice(-20);
+
             const messages = [
                 {
                     role: 'system',
                     content: systemPrompt
                 },
-                ...conversationHistory
+                ...recentMessages
             ];
 
             const response = await fetch(WORKER_API_URL, {
