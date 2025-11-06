@@ -152,7 +152,6 @@
 
         .logout-btn:hover {
             color: #fbbf24;
-            transform: translateY(-1px);
         }
 
         .lang-toggle {
@@ -172,7 +171,6 @@
             background: rgba(255, 255, 255, 0.3);
             border-color: #fbbf24;
             color: #fbbf24;
-            transform: translateY(-1px);
         }
 
         .chat-container {
@@ -407,18 +405,16 @@
         .input-box:focus {
             border-color: #fb923c;
             box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.1), 0 8px 24px rgba(251, 146, 60, 0.15);
-            transform: translateY(-1px);
         }
 
         /* 🔥🔥🔥 修复：发送按钮完美垂直居中 */
         .send-button {
             position: absolute;
             right: 12px;
-            top: 0;
-            bottom: 0;
-            margin: auto 0;
+            bottom: 11.75px;
             width: 40px;
             height: 40px;
+            z-index: 20;
             background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
             border: none;
             border-radius: 12px;
@@ -431,12 +427,9 @@
         }
 
         .send-button:hover:not(:disabled) {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 25px rgba(251, 146, 60, 0.4);
         }
 
         .send-button:active:not(:disabled) {
-            transform: translateY(0) scale(0.98);
         }
 
         .send-button:disabled {
@@ -614,7 +607,6 @@
         .form-input:focus {
             border-color: #fb923c;
             box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.1);
-            transform: translateY(-1px);
         }
 
         .btn-primary {
@@ -887,13 +879,11 @@
                 position: relative;
             }
 
-            /* 🔥 关键修复：发送按钮完美垂直居中 */
+            /* 发送按钮定位 */
             .send-button {
                 position: absolute !important;
                 right: 12px !important;
-                top: 0 !important;
-                bottom: 0 !important;
-                margin: auto 0 !important;
+                bottom: 4px !important;
                 width: 40px !important;
                 height: 40px !important;
             }
@@ -1172,10 +1162,15 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.7/dist/umd/supabase.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script>
+        // 检查页面加载状态
+        window.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+        });
+
         // 验证 marked 是否正确加载
         console.log('Marked version:', marked ? marked.parse('test') : 'Marked not loaded');
 
@@ -1214,7 +1209,7 @@
         let userQuota = null;
         let conversationHistory = [];
         let userProfile = {};
-        let currentLanguage = localStorage.getItem('language') || null;
+        let currentLanguage = localStorage.getItem('language') || 'zh';
 
         // 多语言配置
         const i18n = {
@@ -1607,8 +1602,11 @@ Important tips:
         }
 
         async function init() {
+            console.log('init() function started');
             await detectUserLanguage();
+            console.log('Language detected:', currentLanguage);
             updateUILanguage();
+            console.log('UI language updated');
 
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
@@ -1908,6 +1906,26 @@ Important tips:
                 return;
             }
 
+            // 创建用户配额记录
+            if (data.user) {
+                try {
+                    const { error: quotaError } = await supabase
+                        .from('user_quotas')
+                        .insert({
+                            user_id: data.user.id,
+                            quota: 3  // 新用户默认3次免费对话
+                        });
+
+                    if (quotaError) {
+                        console.warn('创建配额记录失败:', quotaError);
+                    } else {
+                        console.log('配额记录创建成功');
+                    }
+                } catch (error) {
+                    console.warn('创建配额记录异常:', error);
+                }
+            }
+
             document.getElementById('registerError').className = 'success-message';
             document.getElementById('registerError').textContent = t('successRegister');
 
@@ -2027,7 +2045,7 @@ Important tips:
         async function deductQuota() {
             if (!userQuota) {
                 console.error('配额数据未加载');
-                return;
+                throw new Error('配额数据未加载');
             }
 
             const newQuota = userQuota.quota - 1;
@@ -2042,7 +2060,7 @@ Important tips:
 
             if (error) {
                 console.error('扣除配额失败:', error);
-                return;
+                throw new Error(`扣除配额失败: ${error.message}`);
             }
 
             userQuota.quota = newQuota;
@@ -2054,7 +2072,7 @@ Important tips:
             this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
 
-        async function sendMessage() {
+        async function handleSendMessage() {
             if (!currentUser) {
                 showLoginModal();
                 return;
@@ -2067,19 +2085,28 @@ Important tips:
             const message = userInput.value.trim();
             if (!message) return;
 
-            await extractUserInfo(message);
+            // 异步处理用户信息提取，不阻塞主流程
+            extractUserInfo(message).catch(err => {
+                console.warn('用户信息提取失败:', err);
+            });
 
+            // 立即添加到对话历史，避免数组操作延迟
             conversationHistory.push({
                 role: 'user',
                 content: message
             });
 
-            // 🔥 优化1: 限制长度
-            if (conversationHistory.length > 100) {
-                conversationHistory = conversationHistory.slice(-100);
-            }
-
-            await saveChatMessage('user', message);
+            // 异步并行处理：保存用户消息和清理数组
+            Promise.all([
+                saveChatMessage('user', message),
+                Promise.resolve().then(() => {
+                    if (conversationHistory.length > 50) {
+                        conversationHistory = conversationHistory.slice(-50);
+                    }
+                })
+            ]).catch(err => {
+                console.warn('保存用户消息或清理数组失败:', err);
+            });
 
             addMessage(message, 'user');
             userInput.value = '';
@@ -2102,19 +2129,27 @@ Important tips:
 
                 await addMessageWithTyping(response, 'assistant');
 
+                // 立即添加到对话历史
                 conversationHistory.push({
                     role: 'assistant',
                     content: response
                 });
 
-                // 🔥 优化1: 再次限制长度
-                if (conversationHistory.length > 100) {
-                    conversationHistory = conversationHistory.slice(-100);
-                }
-
-                await saveChatMessage('assistant', response);
-
-                await deductQuota();
+                // 完全异步并行处理：保存消息、扣除配额、清理数组
+                Promise.all([
+                    saveChatMessage('assistant', response),
+                    deductQuota(),
+                    Promise.resolve().then(() => {
+                        if (conversationHistory.length > 50) {
+                            conversationHistory = conversationHistory.slice(-50);
+                        }
+                    })
+                ]).then(() => {
+                    // 确保配额显示更新
+                    updateQuotaBadge();
+                }).catch(err => {
+                    console.warn('后台处理失败:', err);
+                });
             } catch (error) {
                 removeMessage(loadingId);
                 const errorMsg = t('apiError');
@@ -2354,16 +2389,25 @@ Important tips:
             }
         }
 
-        sendButton.addEventListener('click', sendMessage);
+        sendButton.addEventListener('click', handleSendMessage);
+
+        // 添加触摸事件支持，解决移动端点击无响应问题
+        sendButton.addEventListener('touchend', function(e) {
+            e.preventDefault(); // 防止事件冒泡
+            handleSendMessage();
+        });
 
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                sendMessage();
+                handleSendMessage();
             }
         });
 
-        init();
+          init().catch(error => {
+            console.error('App initialization failed:', error);
+            showLoginModal(); // 确保即使出错也显示登录框
+        });
     </script>
 </body>
 </html>
