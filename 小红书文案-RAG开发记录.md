@@ -34,8 +34,8 @@
 
 **1️⃣ 向量生成代码**（阿里云官方示例）
 ```typescript
-// 生成1024维向量 - 基于阿里云官方示例改写
-async function getEmbedding(text: string) {
+// 生成向量 - 基于阿里云官方示例改写
+async function getEmbedding(text: string | string[], dimensions: number = 1024) {
   const response = await fetch(
     'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
     {
@@ -46,29 +46,34 @@ async function getEmbedding(text: string) {
       },
       body: JSON.stringify({
         model: 'text-embedding-v4',
-        input: text,
-        // ⚠️ 注意：text-embedding-v4模型不需要手动指定dimension参数！
-        // 模型会自动生成1024维向量
+        input: Array.isArray(text) ? text : [text],
+        dimensions: dimensions  // ⚠️ 注意：这里是 dimensions（复数）！
       })
     }
   )
 
   const result = await response.json()
-  console.log('向量结果:', JSON.stringify(result, null, 2))
   return result.data[0].embedding
 }
 
 // 使用示例
-const inputText = "衣服的质量杠杠的"
-const embedding = await getEmbedding(inputText)
-console.log('向量长度:', embedding.length)  // 输出: 1024
+const inputText = "喜欢，以后还来这里买"
+const embedding = await getEmbedding(inputText, 256)  // 生成256维向量
+console.log(`向量维度: ${embedding.length}`)  // 输出: 向量维度: 256
+
+// 批量生成示例
+const inputTexts = ["喜欢，以后还来这里买", "衣服的质量杠杠的"]
+const embeddings = await Promise.all(
+  inputTexts.map(text => getEmbedding(text, 1024))
+)
+console.log(`第一条向量维度: ${embeddings[0].length}`)  // 输出: 1024
 ```
 
 **2️⃣ 向量检索SQL函数**
 ```sql
 -- 在Supabase执行这个SQL
 CREATE OR REPLACE FUNCTION match_knowledge(
-  query_embedding VECTOR(1024),
+  query_embedding VECTOR(1024),  -- 根据你的向量维度调整
   match_threshold FLOAT DEFAULT 0.5,
   match_count INT DEFAULT 3
 ) RETURNS TABLE (
@@ -132,10 +137,10 @@ async function chatWithRAG(messages) {
 一开始设0.75，啥都搜不到，设为0.5，效果完美。
 2️⃣ 401认证错误
 单独调用RAG函数总是401，后来把RAG检索直接集成到ai-chat函数里，终于成功了。
-3️⃣ 参数名错误
-dimensions（复数）❌
-dimension（单数）✅
-就差一个字母，卡了我3天！
+3️⃣ 参数名注意
+text-embedding-v4模型使用：dimensions（复数）✅
+有些旧文档用的是：dimension（单数）
+具体看模型文档，别搞混了！
 	
 🎉 成果展示
 - AI现在能回复时自动引用知识库原文。
