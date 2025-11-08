@@ -34,8 +34,8 @@
 
 **1️⃣ 向量生成代码**（阿里云官方示例）
 ```typescript
-// 生成向量 - 基于阿里云官方示例改写
-async function getEmbedding(text: string | string[], dimensions: number = 1024) {
+// 生成1024维向量 - 基于阿里云官方示例改写
+async function getEmbedding(text: string) {
   const response = await fetch(
     'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings',
     {
@@ -46,8 +46,8 @@ async function getEmbedding(text: string | string[], dimensions: number = 1024) 
       },
       body: JSON.stringify({
         model: 'text-embedding-v4',
-        input: Array.isArray(text) ? text : [text],
-        dimensions: dimensions  // ⚠️ 注意：这里是 dimensions（复数）！
+        input: [text],
+        dimensions: 1024  // ⚠️ 注意：这里是 dimensions（复数）！
       })
     }
   )
@@ -56,17 +56,23 @@ async function getEmbedding(text: string | string[], dimensions: number = 1024) 
   return result.data[0].embedding
 }
 
-// 使用示例
-const inputText = "喜欢，以后还来这里买"
-const embedding = await getEmbedding(inputText, 256)  // 生成256维向量
-console.log(`向量维度: ${embedding.length}`)  // 输出: 向量维度: 256
+// 使用示例 - 玄学领域
+const inputText = "梦见蛇是吉兆还是凶兆？"
+const embedding = await getEmbedding(inputText)
+console.log(`向量维度: ${embedding.length}`)  // 输出: 向量维度: 1024
 
-// 批量生成示例
-const inputTexts = ["喜欢，以后还来这里买", "衣服的质量杠杠的"]
-const embeddings = await Promise.all(
-  inputTexts.map(text => getEmbedding(text, 1024))
-)
-console.log(`第一条向量维度: ${embeddings[0].length}`)  // 输出: 1024
+// 更多玄学示例
+const fortuneTexts = [
+  "今年财运如何，需要注意什么？",
+  "我的八字五行缺火，该怎么办？",
+  "梦见已故的亲人在说话是什么预兆？"
+]
+
+// 批量生成向量
+for (const text of fortuneTexts) {
+  const vector = await getEmbedding(text)
+  console.log(`"${text}" -> 向量长度: ${vector.length}`)
+}
 ```
 
 **2️⃣ 向量检索SQL函数**
