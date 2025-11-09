@@ -4,19 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- 🔥 CSP安全头：限制资源加载来源，防止XSS攻击 -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com js.stripe.com;
-        style-src 'self' 'unsafe-inline';
-        connect-src 'self' https://*.supabase.co https://dashscope.aliyuncs.com https://ipapi.co https://checkout.stripe.com https://api.stripe.com;
-        font-src 'self' data:;
-        img-src 'self' data: https:;
-        frame-src https://checkout.stripe.com;
-    ">
-
-    <!-- SEO 基础标签 - 标题将由JS动态设置 -->
-    <title>Loading...</title>
+    <!-- SEO 基础标签 -->
+    <title>AI算命大师 - 在线AI智能算命,八字占卜,免费测运势 | 玄机阁</title>
     <meta name="description" content="玄机阁AI算命大师提供在线智能算命服务,基于AI大模型的专业八字占卜、运势预测、事业财运分析。免费体验,精准解读人生命理,24小时在线咨询。">
     <meta name="keywords" content="AI算命,在线算命,智能算命,八字算命,免费算命,运势测算,AI占卜,命理分析,玄机阁,fortune telling">
     <meta name="author" content="玄机阁 AI Fortune">
@@ -63,12 +52,6 @@
             position: relative;
             overflow: hidden;
             animation: breathe 8s ease-in-out infinite;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        body.loaded {
-            opacity: 1;
         }
 
         @keyframes breathe {
@@ -396,13 +379,12 @@
 
         .input-box {
             width: 100%;
-            min-height: 48px;
+            min-height: 56px;
             max-height: 200px;
-            padding: 12px 60px 12px 20px;
+            padding: 16px 60px 16px 20px;
             border: 2px solid rgba(251, 146, 60, 0.3);
             border-radius: 16px;
             font-size: 15px;
-            line-height: 24px;
             font-family: inherit;
             resize: none;
             outline: none;
@@ -425,17 +407,17 @@
             box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.1), 0 8px 24px rgba(251, 146, 60, 0.15);
         }
 
-        /* 🔥🔥🔥 修复：发送按钮固定在底部 */
+        /* 🔥🔥🔥 修复：发送按钮完美垂直居中 */
         .send-button {
             position: absolute;
-            right: 8px;
-            bottom: 11.5px;
-            width: 36px;
-            height: 36px;
+            right: 12px;
+            bottom: 11.75px;
+            width: 40px;
+            height: 40px;
             z-index: 20;
             background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -834,8 +816,7 @@
 
             .input-box {
                 font-size: 16px; /* 防止iOS缩放 */
-                padding-right: 48px !important;
-                min-height: 48px !important;
+                padding-right: 60px !important;
             }
 
             /* 消息气泡优化 */
@@ -892,32 +873,13 @@
                 position: relative;
             }
 
-            /* 移动端发送按钮，固定在底部 */
-            button.send-button {
-                width: 32px !important;
-                height: 32px !important;
-                right: 6px !important;
-                bottom: 13.5px !important;
-                border-radius: 8px !important;
-                min-width: 32px !important;
-                min-height: 32px !important;
-                max-width: 32px !important;
-                max-height: 32px !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-
-            button.send-button svg {
-                width: 18px !important;
-                height: 18px !important;
-                fill: white !important;
-                display: block !important;
-                flex-shrink: 0 !important;
-            }
-
-            button.send-button svg path {
-                fill: white !important;
+            /* 发送按钮定位 */
+            .send-button {
+                position: absolute !important;
+                right: 12px !important;
+                bottom: 4px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
 
             /* 输入区域优化 */
@@ -1092,12 +1054,12 @@
     <div class="header">
         <h1 id="appTitle">🔮 玄机阁</h1>
         <div style="display: flex; align-items: center; gap: 12px;">
-            <button class="lang-toggle" id="langToggle">EN</button>
+            <button class="lang-toggle" onclick="toggleLanguage()" id="langToggle">EN</button>
             <div class="user-info" id="userInfo" style="display: none;">
                 <span id="username"></span>
                 <span class="quota-badge" id="quotaBadge">剩余次数: 10</span>
-                <button class="logout-btn" id="clearBtn">清空记录</button>
-                <button class="logout-btn" id="logoutBtn">退出</button>
+                <button class="logout-btn" onclick="clearAllHistory()" id="clearBtn">清空记录</button>
+                <button class="logout-btn" onclick="logout()" id="logoutBtn">退出</button>
             </div>
         </div>
     </div>
@@ -1106,7 +1068,7 @@
         <div id="verificationBanner" class="verification-banner" style="display: none;">
             <strong id="verifyTitle">⚠️ 请验证您的邮箱</strong><br>
             <span id="verifyText">我们已向您的邮箱发送了验证链接,请查收并点击链接完成验证。</span>
-            <a class="resend-link" id="resendLink">重新发送</a>
+            <a class="resend-link" onclick="resendVerificationEmail()" id="resendLink">重新发送</a>
         </div>
         <div class="welcome-message">
             <h2 id="welcomeTitle">命运如何,且让我为你测算</h2>
@@ -1134,7 +1096,7 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 class="modal-title" id="loginTitle">登录</h2>
-            <form id="loginForm">
+            <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label class="form-label" id="loginEmailLabel">邮箱</label>
                     <input type="email" class="form-input" id="loginUsername" required>
@@ -1147,7 +1109,7 @@
                 <button type="submit" class="btn-primary" id="loginSubmitBtn">登录</button>
             </form>
             <div class="modal-footer">
-                <span id="loginFooterText">还没有账号?</span><a class="modal-link" id="loginFooterLink">立即注册</a>
+                <span id="loginFooterText">还没有账号?</span><a class="modal-link" onclick="showRegisterModal()" id="loginFooterLink">立即注册</a>
             </div>
         </div>
     </div>
@@ -1156,7 +1118,7 @@
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <h2 class="modal-title" id="registerTitle">注册</h2>
-            <form id="registerForm">
+            <form id="registerForm" onsubmit="handleRegister(event)">
                 <div class="form-group">
                     <label class="form-label" id="registerEmailLabel">邮箱</label>
                     <input type="email" class="form-input" id="registerUsername" required>
@@ -1173,7 +1135,7 @@
                 <button type="submit" class="btn-primary" id="registerSubmitBtn">注册</button>
             </form>
             <div class="modal-footer">
-                <span id="registerFooterText">已有账号?</span><a class="modal-link" id="registerFooterLink">立即登录</a>
+                <span id="registerFooterText">已有账号?</span><a class="modal-link" onclick="showLoginModal()" id="registerFooterLink">立即登录</a>
             </div>
         </div>
     </div>
@@ -1187,36 +1149,20 @@
                 <small>¥</small>4.99
             </div>
             <p class="payment-desc" id="paymentDesc2">解锁 50 次对话</p>
-            <button class="btn-primary" id="paymentBtn">立即支付</button>
+            <button class="btn-primary" onclick="handlePayment()" id="paymentBtn">立即支付</button>
             <div class="payment-buttons">
-                <button class="btn-secondary" id="paymentCancelBtn">取消</button>
+                <button class="btn-secondary" onclick="closePaymentModal()" id="paymentCancelBtn">取消</button>
             </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
-    <!-- 🔥 XSS防护：添加DOMPurify清理HTML -->
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://js.stripe.com/v3/"></script>
     <script>
-        // 🔥 修复7：移除内联onclick，改用addEventListener
+        // 检查页面加载状态
         window.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded');
-
-            // 绑定所有事件监听器
-            document.getElementById('langToggle').addEventListener('click', toggleLanguage);
-            document.getElementById('clearBtn').addEventListener('click', clearAllHistory);
-            document.getElementById('logoutBtn').addEventListener('click', logout);
-            document.getElementById('resendLink').addEventListener('click', resendVerificationEmail);
-            document.getElementById('loginFooterLink').addEventListener('click', showRegisterModal);
-            document.getElementById('registerFooterLink').addEventListener('click', showLoginModal);
-            document.getElementById('paymentBtn').addEventListener('click', handlePayment);
-            document.getElementById('paymentCancelBtn').addEventListener('click', closePaymentModal);
-
-            // 绑定表单提交事件
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
         });
 
         // 验证 marked 是否正确加载
@@ -1253,47 +1199,15 @@
         const STRIPE_PUBLISHABLE_KEY = 'pk_live_51SJTJ8PCdo22g31uLFcc8RAq7C3K11KpQGC8V9ktNQHydPpxMgCdAwb9uBK3QiKeW1bwo2TuIGYPYMlkZKfTOsh900PhhrrubA';
         const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
 
-        // 🔥 修复2：localStorage安全包装函数（防止Safari隐私模式崩溃）
-        function safeSetLocalStorage(key, value) {
-            try {
-                localStorage.setItem(key, value);
-                return true;
-            } catch (e) {
-                console.warn('localStorage不可用（可能是隐私模式）:', e);
-                return false;
-            }
-        }
-
-        function safeGetLocalStorage(key, defaultValue = null) {
-            try {
-                return localStorage.getItem(key) || defaultValue;
-            } catch (e) {
-                console.warn('localStorage不可用（可能是隐私模式）:', e);
-                return defaultValue;
-            }
-        }
-
         let currentUser = null;
         let userQuota = null;
         let conversationHistory = [];
         let userProfile = {};
-        let currentLanguage = safeGetLocalStorage('language', 'zh');
-        let isDeletingHistory = false;  // 🔥 删除历史记录的锁
-
-        // 🔥 配置常量：提取魔法数字，便于维护
-        const CONFIG = {
-            MAX_HISTORY_LOAD: 50,      // 加载历史记录条数
-            MAX_HISTORY_SEND: 20,      // 发送给AI的历史条数
-            MAX_HISTORY_MEMORY: 50,    // 内存中保留的历史条数
-            API_TIMEOUT: 30000,        // API请求超时时间（毫秒）
-            LANGUAGE_DETECT_TIMEOUT: 1500,  // 语言检测超时时间（毫秒）
-            TYPING_DELAY: 100,         // 打字效果延迟（毫秒）
-        };
+        let currentLanguage = localStorage.getItem('language') || 'zh';
 
         // 多语言配置
         const i18n = {
             zh: {
-                pageTitle: 'AI算命大师 - 在线AI智能算命,八字占卜,免费测运势 | 玄机阁',
                 appTitle: '🔮 玄机阁',
                 langToggle: 'EN',
                 clearBtn: '清空记录',
@@ -1305,7 +1219,6 @@
                 welcomeTitle: '命运如何,且让我为你测算',
                 welcomeDesc: '周易八卦,紫微斗数,占往知来',
                 inputPlaceholder: '说说你的困惑,我为你指点迷津...',
-                inputPlaceholderMobile: '说说你的困惑...',
                 loginTitle: '登录',
                 loginEmailLabel: '邮箱',
                 loginPasswordLabel: '密码',
@@ -1336,10 +1249,9 @@
                 resendError: '发送失败:',
                 paymentSuccess: '支付成功!(模拟)\n实际使用时需要接入真实支付接口',
                 paymentError: '支付失败,请稍后重试',
-                apiError: '算命失败了,可能是网络问题,请稍后再试'
+                apiError: '抱歉,天机不可泄露太多,请稍后再试...'
             },
             en: {
-                pageTitle: 'AI Fortune Teller - Online Fortune Reading, Astrology & Divination | Free Trial',
                 appTitle: '🔮 Fortune Teller',
                 langToggle: '中文',
                 clearBtn: 'Clear History',
@@ -1351,7 +1263,6 @@
                 welcomeTitle: 'Let me read your fortune',
                 welcomeDesc: 'Ancient wisdom meets modern AI',
                 inputPlaceholder: 'Share your questions, let me guide you...',
-                inputPlaceholderMobile: 'Ask me anything...',
                 loginTitle: 'Login',
                 loginEmailLabel: 'Email',
                 loginPasswordLabel: 'Password',
@@ -1382,7 +1293,7 @@
                 resendError: 'Sending failed: ',
                 paymentSuccess: 'Payment successful! (Mock)\nActual payment gateway needs to be integrated for production use',
                 paymentError: 'Payment failed, please try again later',
-                apiError: 'Fortune reading failed, possibly network issue, please try again'
+                apiError: 'Sorry, the mystic forces are unavailable at the moment. Please try again later...'
             }
         };
 
@@ -1391,7 +1302,7 @@
         }
 
         async function detectUserLanguage() {
-            const savedLanguage = safeGetLocalStorage('language');
+            const savedLanguage = localStorage.getItem('language');
             if (savedLanguage) {
                 currentLanguage = savedLanguage;
                 return;
@@ -1402,7 +1313,7 @@
 
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), CONFIG.LANGUAGE_DETECT_TIMEOUT);
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
 
                 const response = await fetch('https://ipapi.co/json/', {
                     signal: controller.signal
@@ -1426,14 +1337,11 @@
 
         function toggleLanguage() {
             currentLanguage = currentLanguage === 'zh' ? 'en' : 'zh';
-            safeSetLocalStorage('language', currentLanguage);
+            localStorage.setItem('language', currentLanguage);
             updateUILanguage();
         }
 
         function updateUILanguage() {
-            // 🔥 更新浏览器标签页标题
-            document.title = t('pageTitle');
-
             document.getElementById('appTitle').textContent = t('appTitle');
             document.getElementById('langToggle').textContent = t('langToggle');
             document.getElementById('clearBtn').textContent = t('clearBtn');
@@ -1447,10 +1355,7 @@
             if (welcomeTitle) welcomeTitle.textContent = t('welcomeTitle');
             if (welcomeDesc) welcomeDesc.textContent = t('welcomeDesc');
 
-            // 🔥 根据屏幕宽度设置 placeholder（移动端使用短文本）
-            const isMobile = window.innerWidth <= 768;
-            const placeholderKey = isMobile ? 'inputPlaceholderMobile' : 'inputPlaceholder';
-            document.getElementById('userInput').placeholder = t(placeholderKey);
+            document.getElementById('userInput').placeholder = t('inputPlaceholder');
             document.getElementById('loginTitle').textContent = t('loginTitle');
             document.getElementById('loginEmailLabel').textContent = t('loginEmailLabel');
             document.getElementById('loginPasswordLabel').textContent = t('loginPasswordLabel');
@@ -1531,8 +1436,6 @@
 
                 return `You are an insightful fortune teller with a touch of sarcasm but genuine sincerity. You speak casually like a friend, but occasionally drop profound philosophical insights.
 
-🔥 CRITICAL: You MUST respond entirely in ENGLISH. Do NOT use Chinese or any other language.
-
 Current time: ${timeOfDay}
 
 Your style:
@@ -1592,10 +1495,6 @@ Important tips:
                 ]
             };
 
-            // 🔥 修复4：过滤常见误判词（动词、代词等）
-            const blacklist = ['你', '您', '他', '她', '它', '我们', '你们', '他们', '大家', '别人', '自己',
-                               '不要', '要不', '明天', '今天', '昨天', '什么', '怎么', '哪里'];
-
             let hasUpdate = false;
 
             // 提取姓名
@@ -1604,11 +1503,7 @@ Important tips:
                 if (matches) {
                     matches.forEach(match => {
                         const name = match.replace(/我叫|我是|我姓/g, '');
-                        // 🔥 修复4：添加更严格的验证
-                        if (name.length > 0 && name.length <= 4 &&  // 姓名通常不超过4个字
-                            !name.match(/[0-9]/) &&  // 不包含数字
-                            !blacklist.includes(name) &&  // 不在黑名单中
-                            !blacklist.some(word => name.includes(word))) {  // 不包含黑名单词
+                        if (name.length > 0 && name.length <= 10 && !name.match(/[0-9]/)) {
                             userProfile.name = name;
                             hasUpdate = true;
                             console.log('记住用户姓名:', name);
@@ -1645,7 +1540,7 @@ Important tips:
 
         async function saveUserProfile() {
             if (currentUser) {
-                safeSetLocalStorage(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+                localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
 
                 // 🔥 添加这个
                 try {
@@ -1678,35 +1573,23 @@ Important tips:
                             birthday: data.birthday,
                             zodiac: data.zodiac
                         };
-                        safeSetLocalStorage(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
+                        localStorage.setItem(`userProfile_${currentUser.id}`, JSON.stringify(userProfile));
                         console.log('从数据库加载用户信息:', userProfile);
                     } else {
                         // 降级到localStorage
-                        const saved = safeGetLocalStorage(`userProfile_${currentUser.id}`);
+                        const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
                         if (saved) {
-                            // 🔥 修复3：JSON.parse添加错误处理
-                            try {
-                                userProfile = JSON.parse(saved);
-                                console.log('从localStorage加载用户信息:', userProfile);
-                            } catch (e) {
-                                console.error('用户信息解析失败，重置为空对象:', e);
-                                userProfile = {};
-                            }
+                            userProfile = JSON.parse(saved);
+                            console.log('从localStorage加载用户信息:', userProfile);
                         }
                     }
                 } catch (error) {
                     console.warn('加载用户信息失败，降级到localStorage:', error);
                     // 降级到localStorage
-                    const saved = safeGetLocalStorage(`userProfile_${currentUser.id}`);
+                    const saved = localStorage.getItem(`userProfile_${currentUser.id}`);
                     if (saved) {
-                        // 🔥 修复3：JSON.parse添加错误处理
-                        try {
-                            userProfile = JSON.parse(saved);
-                            console.log('从localStorage加载用户信息:', userProfile);
-                        } catch (e) {
-                            console.error('用户信息解析失败，重置为空对象:', e);
-                            userProfile = {};
-                        }
+                        userProfile = JSON.parse(saved);
+                        console.log('从localStorage加载用户信息:', userProfile);
                     }
                 }
             }
@@ -1718,9 +1601,6 @@ Important tips:
             console.log('Language detected:', currentLanguage);
             updateUILanguage();
             console.log('UI language updated');
-
-            // 🔥 语言设置完成后显示页面
-            document.body.classList.add('loaded');
 
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
@@ -1790,7 +1670,6 @@ Important tips:
                     await loadUserProfile();
                     await loadUserQuota();
                     await loadChatHistory();
-                    checkEmailVerification();  // 🔥 修复5：每次登录时检查邮箱验证状态
                     showUserInfo();
                 } else if (event === 'SIGNED_OUT') {
                     currentUser = null;
@@ -1798,13 +1677,6 @@ Important tips:
                     conversationHistory = [];
                     clearChatDisplay();
                 }
-            });
-
-            // 🔥 监听窗口大小变化，动态更新 placeholder
-            window.addEventListener('resize', function() {
-                const isMobile = window.innerWidth <= 768;
-                const placeholderKey = isMobile ? 'inputPlaceholderMobile' : 'inputPlaceholder';
-                document.getElementById('userInput').placeholder = t(placeholderKey);
             });
         }
 
@@ -1817,7 +1689,7 @@ Important tips:
                     .select('*')
                     .eq('user_id', currentUser.id)
                     .order('created_at', { ascending: true })
-                    .limit(CONFIG.MAX_HISTORY_LOAD);
+                    .limit(50);
 
                 if (error) {
                     console.error('加载聊天历史失败:', error);
@@ -1829,44 +1701,16 @@ Important tips:
                     welcomeMessage.remove();
                 }
 
-                // 🔥 性能优化：使用DocumentFragment批量添加DOM元素，减少回流
                 if (data && data.length > 0) {
-                    const fragment = document.createDocumentFragment();
-
                     data.forEach(msg => {
                         if (msg.role !== 'system') {
-                            // 创建消息元素
-                            const messageDiv = document.createElement('div');
-                            messageDiv.className = `message ${msg.role}`;
-
-                            const avatar = document.createElement('div');
-                            avatar.className = `avatar ${msg.role}`;
-                            avatar.textContent = msg.role === 'user' ? '👤' : '🔮';
-
-                            const messageContent = document.createElement('div');
-                            messageContent.className = 'message-content';
-                            messageContent.textContent = msg.content;
-
-                            if (msg.role === 'user') {
-                                messageDiv.appendChild(messageContent);
-                                messageDiv.appendChild(avatar);
-                            } else {
-                                messageDiv.appendChild(avatar);
-                                messageDiv.appendChild(messageContent);
-                            }
-
-                            fragment.appendChild(messageDiv);
-
+                            addMessage(msg.content, msg.role);
                             conversationHistory.push({
                                 role: msg.role,
                                 content: msg.content
                             });
                         }
                     });
-
-                    // 一次性添加所有消息（只触发一次回流）
-                    chatContainer.appendChild(fragment);
-                    chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
                 }
             } catch (error) {
                 console.error('加载聊天历史异常:', error);
@@ -1893,13 +1737,12 @@ Important tips:
             }
         }
 
-        // 🔥 提取重复代码：欢迎消息HTML模板
-        function getWelcomeMessageHTML() {
-            return `
+        function clearChatDisplay() {
+            chatContainer.innerHTML = `
                 <div id="verificationBanner" class="verification-banner" style="display: none;">
                     <strong id="verifyTitle">${t('verifyTitle')}</strong><br>
                     <span id="verifyText">${t('verifyText')}</span>
-                    <a class="resend-link" id="resendLink">${t('resendLink')}</a>
+                    <a class="resend-link" onclick="resendVerificationEmail()" id="resendLink">${t('resendLink')}</a>
                 </div>
                 <div class="welcome-message">
                     <h2 id="welcomeTitle">${t('welcomeTitle')}</h2>
@@ -1908,45 +1751,19 @@ Important tips:
             `;
         }
 
-        function clearChatDisplay() {
-            chatContainer.innerHTML = getWelcomeMessageHTML();
-        }
+        async function loadUserQuota() {
+            const { data, error } = await supabase
+                .from('user_quotas')
+                .select('*')
+                .eq('user_id', currentUser.id)
+                .single();
 
-        // 🔥 修复8：添加自动重试机制
-        async function loadUserQuota(retryCount = 0) {
-            try {
-                const { data, error } = await supabase
-                    .from('user_quotas')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .single();
-
-                if (error) throw error;
-
-                userQuota = data;
-                console.log('✅ 配额加载成功:', userQuota.quota);
-            } catch (error) {
-                console.error(`配额加载失败（第${retryCount + 1}次尝试）:`, error);
-
-                // 🔥 自动重试最多2次
-                if (retryCount < 2) {
-                    const delay = (retryCount + 1) * 1000;  // 第1次1秒后，第2次2秒后
-                    console.log(`${delay / 1000}秒后自动重试...`);
-                    await new Promise(r => setTimeout(r, delay));
-                    return loadUserQuota(retryCount + 1);
-                }
-
-                // 🔥 重试失败后才提示用户
-                userQuota = null;
-                const errorMsg = currentLanguage === 'zh'
-                    ? '配额加载失败（已重试2次），请刷新页面重试'
-                    : 'Failed to load quota (retried twice), please refresh the page';
-                setTimeout(() => {
-                    if (confirm(errorMsg + '\n\n' + (currentLanguage === 'zh' ? '是否立即刷新？' : 'Refresh now?'))) {
-                        location.reload();
-                    }
-                }, 1000);
+            if (error) {
+                console.error('加载配额失败:', error);
+                return;
             }
+
+            userQuota = data;
         }
 
         function showUserInfo() {
@@ -1980,14 +1797,8 @@ Important tips:
         }
 
         function updateQuotaBadge() {
-            // 🔥 改进：加载失败显示 "--"，而不是 0
-            let quotaDisplay;
-            if (!userQuota) {
-                quotaDisplay = '--';  // 加载失败
-            } else {
-                quotaDisplay = userQuota.quota;  // 正常显示数字
-            }
-            document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quotaDisplay}`;
+            const quota = userQuota ? userQuota.quota : '--';
+            document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quota}`;
         }
 
         function showLoginModal() {
@@ -2067,22 +1878,14 @@ Important tips:
 
         async function handleRegister(event) {
             event.preventDefault();
-
-            // 🔥 添加加载动画：禁用按钮并显示加载状态
-            const submitBtn = document.getElementById('registerSubmitBtn');
-            const registerError = document.getElementById('registerError');
             const email = document.getElementById('registerUsername').value;
             const password = document.getElementById('registerPassword').value;
             const passwordConfirm = document.getElementById('registerPasswordConfirm').value;
 
             if (password !== passwordConfirm) {
-                registerError.textContent = t('errorPasswordMismatch');
+                document.getElementById('registerError').textContent = t('errorPasswordMismatch');
                 return;
             }
-
-            submitBtn.disabled = true;
-            submitBtn.textContent = currentLanguage === 'zh' ? '注册中...' : 'Signing up...';
-            registerError.textContent = '';
 
             const { data, error } = await supabase.auth.signUp({
                 email: email,
@@ -2093,10 +1896,7 @@ Important tips:
             });
 
             if (error) {
-                registerError.textContent = error.message;
-                // 🔥 注册失败，恢复按钮状态
-                submitBtn.disabled = false;
-                submitBtn.textContent = t('registerSubmitBtn');
+                document.getElementById('registerError').textContent = error.message;
                 return;
             }
 
@@ -2120,18 +1920,14 @@ Important tips:
                 }
             }
 
-            // 🔥 注册成功，显示成功消息（保持按钮禁用）
-            registerError.className = 'success-message';
-            registerError.textContent = t('successRegister');
+            document.getElementById('registerError').className = 'success-message';
+            document.getElementById('registerError').textContent = t('successRegister');
 
             setTimeout(() => {
                 document.getElementById('registerModal').classList.remove('active');
                 showLoginModal();
-                registerError.className = 'error-message';
-                registerError.textContent = '';
-                // 重置按钮状态
-                submitBtn.disabled = false;
-                submitBtn.textContent = t('registerSubmitBtn');
+                document.getElementById('registerError').className = 'error-message';
+                document.getElementById('registerError').textContent = '';
             }, 3000);
         }
 
@@ -2141,40 +1937,26 @@ Important tips:
             const confirmed = confirm(t('confirmClearHistory'));
             if (!confirmed) return;
 
-            // 🔥 设置删除锁，防止删除期间发送消息
-            isDeletingHistory = true;
-            sendButton.disabled = true;
-            userInput.disabled = true;
+            try {
+                const { error } = await supabase
+                    .from('chat_messages')
+                    .delete()
+                    .eq('user_id', currentUser.id);
 
-            // 🔥 优化：立即清空前端，不等待后端
-            conversationHistory = [];
-            clearChatDisplay();
-            console.log('前端聊天记录已清空');
+                if (error) {
+                    console.error('清空记录失败:', error);
+                    alert(t('errorClearHistory'));
+                    return;
+                }
 
-            // 🔥 后台异步删除数据库记录（不阻塞用户）
-            supabase
-                .from('chat_messages')
-                .delete()
-                .eq('user_id', currentUser.id)
-                .then(({ error }) => {
-                    if (error) {
-                        console.error('后台删除记录失败:', error);
-                        // 不弹窗打断用户，只在控制台记录
-                    } else {
-                        console.log('数据库记录已删除');
-                    }
-                })
-                .catch(error => {
-                    console.error('删除记录异常:', error);
-                })
-                .finally(() => {
-                    // 🔥 释放锁，允许发送新消息
-                    isDeletingHistory = false;
-                    sendButton.disabled = false;
-                    userInput.disabled = false;
-                    userInput.focus();
-                    console.log('可以开始新对话了');
-                });
+                conversationHistory = [];
+                clearChatDisplay();
+
+                alert(t('successClearHistory'));
+            } catch (error) {
+                console.error('清空记录异常:', error);
+                alert(t('errorClearHistory'));
+            }
         }
 
         async function logout() {
@@ -2183,7 +1965,17 @@ Important tips:
             userQuota = null;
             conversationHistory = [];
             document.getElementById('userInfo').style.display = 'none';
-            chatContainer.innerHTML = getWelcomeMessageHTML();
+            chatContainer.innerHTML = `
+                <div id="verificationBanner" class="verification-banner" style="display: none;">
+                    <strong id="verifyTitle">${t('verifyTitle')}</strong><br>
+                    <span id="verifyText">${t('verifyText')}</span>
+                    <a class="resend-link" onclick="resendVerificationEmail()" id="resendLink">${t('resendLink')}</a>
+                </div>
+                <div class="welcome-message">
+                    <h2 id="welcomeTitle">${t('welcomeTitle')}</h2>
+                    <p id="welcomeDesc">${t('welcomeDesc')}</p>
+                </div>
+            `;
             showLoginModal();
         }
 
@@ -2199,8 +1991,7 @@ Important tips:
             try {
                 const paymentBtn = document.getElementById('paymentBtn');
                 paymentBtn.disabled = true;
-                // 🔥 修复6：更明确的加载状态提示
-                paymentBtn.textContent = currentLanguage === 'zh' ? '正在跳转支付...' : 'Redirecting to payment...';
+                paymentBtn.textContent = currentLanguage === 'zh' ? '处理中...' : 'Processing...';
 
                 const response = await fetch(`${SUPABASE_URL}/functions/v1/stripe-checkout`, {
                     method: 'POST',
@@ -2238,18 +2029,7 @@ Important tips:
         }
 
         function checkQuota() {
-            // 🔥 改进：区分配额不足和加载失败
-            if (!userQuota) {
-                // 配额加载失败
-                const errorMsg = currentLanguage === 'zh'
-                    ? '配额信息加载失败，请刷新页面后重试'
-                    : 'Failed to load quota info, please refresh the page';
-                alert(errorMsg);
-                return false;
-            }
-
-            if (userQuota.quota <= 0) {
-                // 配额用完
+            if (!userQuota || userQuota.quota <= 0) {
                 showPaymentModal();
                 return false;
             }
@@ -2262,59 +2042,33 @@ Important tips:
                 throw new Error('配额数据未加载');
             }
 
-            // 🔥 使用数据库RPC函数实现原子操作，避免竞态条件
-            // 即使多个标签页同时调用，数据库会通过行锁确保配额准确扣除
-            try {
-                const { data, error } = await supabase
-                    .rpc('deduct_user_quota', {
-                        user_id_param: currentUser.id
-                    });
+            const newQuota = userQuota.quota - 1;
 
-                if (error) {
-                    console.error('RPC调用失败:', error);
-                    throw new Error(`RPC调用失败: ${error.message}`);
-                }
+            const { error } = await supabase
+                .from('user_quotas')
+                .update({
+                    quota: newQuota,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', currentUser.id);
 
-                // RPC返回的是数组，取第一个结果
-                const result = data[0];
-
-                if (!result.success) {
-                    console.error('配额扣除失败:', result.message);
-                    throw new Error(result.message);
-                }
-
-                // 更新前端配额显示
-                userQuota.quota = result.remaining_quota;
-                updateQuotaBadge();
-
-                console.log('✅ 配额扣除成功，剩余:', result.remaining_quota);
-            } catch (error) {
-                console.error('扣除配额异常:', error);
-                throw error;
+            if (error) {
+                console.error('扣除配额失败:', error);
+                throw new Error(`扣除配额失败: ${error.message}`);
             }
+
+            userQuota.quota = newQuota;
+            updateQuotaBadge();
         }
 
         userInput.addEventListener('input', function() {
-            // 🔥 修复：暂时禁用 transition，避免高度计算时的闪烁
-            this.style.transition = 'none';
             this.style.height = 'auto';
-            // 确保最小高度 48px
-            const newHeight = Math.max(48, Math.min(this.scrollHeight, 200));
-            this.style.height = newHeight + 'px';
-            // 强制重绘后恢复 transition
-            void this.offsetHeight; // 触发重绘
-            this.style.transition = 'all 0.3s ease';
+            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
         });
 
         async function handleSendMessage() {
             if (!currentUser) {
                 showLoginModal();
-                return;
-            }
-
-            // 🔥 检查是否正在删除历史记录
-            if (isDeletingHistory) {
-                console.log('正在删除历史记录，请稍后...');
                 return;
             }
 
@@ -2340,8 +2094,8 @@ Important tips:
             Promise.all([
                 saveChatMessage('user', message),
                 Promise.resolve().then(() => {
-                    if (conversationHistory.length > CONFIG.MAX_HISTORY_MEMORY) {
-                        conversationHistory = conversationHistory.slice(-CONFIG.MAX_HISTORY_MEMORY);
+                    if (conversationHistory.length > 50) {
+                        conversationHistory = conversationHistory.slice(-50);
                     }
                 })
             ]).catch(err => {
@@ -2350,7 +2104,7 @@ Important tips:
 
             addMessage(message, 'user');
             userInput.value = '';
-            userInput.style.height = 'auto';
+            userInput.style.height = '56px';
 
             sendButton.disabled = true;
             userInput.disabled = true;
@@ -2363,10 +2117,7 @@ Important tips:
             const loadingId = addLoadingMessage();
 
             try {
-                // 🔥 修复: 先调用AI，成功后再扣除配额
-                console.log('调用AI API...');
                 const response = await callAPI();
-                console.log('AI调用成功，准备扣除配额...');
 
                 removeMessage(loadingId);
 
@@ -2378,48 +2129,30 @@ Important tips:
                     content: response
                 });
 
-                // 🔥 AI成功后才扣除配额，必须等待扣除完成
-                try {
-                    await deductQuota();
-                    console.log('配额扣除成功，当前剩余:', userQuota.quota);
-                } catch (quotaError) {
-                    console.error('配额扣除失败（AI已返回）:', quotaError);
-                    // 🔥 配额扣除失败，显示提示（但不影响用户继续使用）
-                    const errorMsg = currentLanguage === 'zh'
-                        ? '⚠️ 配额更新失败，请刷新页面查看实际余额'
-                        : '⚠️ Quota update failed, please refresh to see actual balance';
-                    setTimeout(() => {
-                        addMessage(errorMsg, 'assistant');
-                    }, 500);
-                }
-
-                // 异步保存消息和清理数组
+                // 完全异步并行处理：保存消息、扣除配额、清理数组
                 Promise.all([
                     saveChatMessage('assistant', response),
+                    deductQuota(),
                     Promise.resolve().then(() => {
-                        if (conversationHistory.length > CONFIG.MAX_HISTORY_MEMORY) {
-                            conversationHistory = conversationHistory.slice(-CONFIG.MAX_HISTORY_MEMORY);
+                        if (conversationHistory.length > 50) {
+                            conversationHistory = conversationHistory.slice(-50);
                         }
                     })
-                ]).catch(err => {
+                ]).then(() => {
+                    // 确保配额显示更新
+                    updateQuotaBadge();
+                }).catch(err => {
                     console.warn('后台处理失败:', err);
-                    // 🔥 提示用户消息保存失败
-                    const errorMsg = currentLanguage === 'zh'
-                        ? '⚠️ 对话保存失败，刷新页面后可能丢失此次对话记录'
-                        : '⚠️ Failed to save conversation, may be lost after refresh';
-                    addMessage(errorMsg, 'assistant');
                 });
             } catch (error) {
                 removeMessage(loadingId);
-
-                // API调用失败，不扣除配额
-                console.error('API调用失败，不扣除配额:', error);
                 const errorMsg = t('apiError');
                 conversationHistory.push({
                     role: 'assistant',
                     content: errorMsg
                 });
                 addMessageWithTyping(errorMsg, 'assistant');
+                console.error('API调用失败:', error);
                 console.error('错误详情:', error.message);
                 console.error('错误堆栈:', error.stack);
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) {
@@ -2433,35 +2166,23 @@ Important tips:
         }
 
         async function callAPI() {
-            console.log('===== API调用信息 =====');
-            console.log('当前语言 / Current Language:', currentLanguage);
-            console.log('界面语言按钮显示:', document.getElementById('langToggle').textContent);
             let systemPrompt = getSystemPrompt();
-            console.log('System Prompt 前100字符:', systemPrompt.substring(0, 100));
 
             if (Object.keys(userProfile).length > 0) {
-                const userInfoHeader = currentLanguage === 'zh'
-                    ? '\n\n用户信息(请记住并在合适时自然提及):\n'
-                    : '\n\nUser Information (remember and mention naturally when appropriate):\n';
-
-                systemPrompt += userInfoHeader;
-
+                systemPrompt += '\n\n用户信息(请记住并在合适时自然提及):\n';
                 if (userProfile.name) {
-                    const nameLabel = currentLanguage === 'zh' ? '姓名' : 'Name';
-                    systemPrompt += `- ${nameLabel}: ${userProfile.name}\n`;
+                    systemPrompt += `- 姓名:${userProfile.name}\n`;
                 }
                 if (userProfile.birthday) {
-                    const birthdayLabel = currentLanguage === 'zh' ? '生日' : 'Birthday';
-                    systemPrompt += `- ${birthdayLabel}: ${userProfile.birthday}\n`;
+                    systemPrompt += `- 生日:${userProfile.birthday}\n`;
                 }
                 if (userProfile.zodiac) {
-                    const zodiacLabel = currentLanguage === 'zh' ? '星座' : 'Zodiac';
-                    systemPrompt += `- ${zodiacLabel}: ${userProfile.zodiac}\n`;
+                    systemPrompt += `- 星座:${userProfile.zodiac}\n`;
                 }
             }
 
             // 🔥 优化2: 只发最近20条
-            const recentMessages = conversationHistory.slice(-CONFIG.MAX_HISTORY_SEND);
+            const recentMessages = conversationHistory.slice(-20);
 
             const messages = [
                 {
@@ -2471,40 +2192,17 @@ Important tips:
                 ...recentMessages
             ];
 
-            const requestBody = {
-                messages: messages,
-                language: currentLanguage  // 🔥 传递当前语言
-            };
-
-            console.log('发送给Edge Function的数据:', {
-                language: requestBody.language,
-                messageCount: requestBody.messages.length
+            const response = await fetch(WORKER_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`
+                },
+                body: JSON.stringify({
+                    messages: messages
+                })
             });
-
-            // 🔥 修复：添加超时控制（30秒）
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT);
-
-            let response;
-            try {
-                response = await fetch(WORKER_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`
-                    },
-                    body: JSON.stringify(requestBody),
-                    signal: controller.signal  // 🔥 添加超时信号
-                });
-                clearTimeout(timeoutId);
-            } catch (error) {
-                clearTimeout(timeoutId);
-                if (error.name === 'AbortError') {
-                    throw new Error('请求超时，请检查网络连接');
-                }
-                throw error;
-            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -2519,43 +2217,28 @@ Important tips:
                 const decoder = new TextDecoder('utf-8');
                 let fullContent = '';
 
-                // 🔥 修复1：添加流式读取错误处理
-                try {
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                        const chunk = decoder.decode(value, { stream: true });
-                        const lines = chunk.split('\n');
+                    const chunk = decoder.decode(value, { stream: true });
+                    const lines = chunk.split('\n');
 
-                        for (const line of lines) {
-                            if (line.startsWith('data: ')) {
-                                const data = line.slice(6);
-                                if (data === '[DONE]') continue;
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
 
-                                try {
-                                    const parsed = JSON.parse(data);
-                                    const content = parsed.choices[0]?.delta?.content || '';
-                                    if (content) {
-                                        fullContent += content;
-                                    }
-                                } catch (e) {
-                                    // JSON解析失败，跳过这一行
-                                    console.warn('SSE数据解析失败:', data);
+                            try {
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices[0]?.delta?.content || '';
+                                if (content) {
+                                    fullContent += content;
                                 }
+                            } catch (e) {
                             }
                         }
                     }
-                } catch (error) {
-                    console.error('流式读取异常:', error);
-                    throw new Error(
-                        currentLanguage === 'zh'
-                            ? '网络连接中断，请重试'
-                            : 'Network connection interrupted, please retry'
-                    );
-                } finally {
-                    // 🔥 确保释放reader锁，避免资源泄漏
-                    reader.releaseLock();
                 }
 
                 return fullContent;
@@ -2589,15 +2272,9 @@ Important tips:
             if (role === 'assistant') {
                 messageContent.style.opacity = '0';
                 
-                if (typeof marked !== 'undefined' && typeof DOMPurify !== 'undefined') {
-                    console.log('[渲染] 使用 Marked 解析 Markdown + DOMPurify 清理');
-                    // 🔥 XSS防护：使用DOMPurify清理HTML
-                    messageContent.innerHTML = DOMPurify.sanitize(marked.parse(content));
-                } else if (typeof marked !== 'undefined') {
-                    // 🔥 安全警告：DOMPurify未加载，但marked可能允许HTML，存在XSS风险
-                    console.warn('[渲染] ⚠️ DOMPurify 未加载，marked可能存在XSS风险');
-                    // 降级为纯文本显示以避免XSS（marked默认配置可能允许HTML）
-                    messageContent.textContent = content;
+                if (typeof marked !== 'undefined') {
+                    console.log('[渲染] 使用 Marked 解析 Markdown');
+                    messageContent.innerHTML = marked.parse(content);
                 } else {
                     console.warn('[渲染] Marked 未加载,使用备用方案');
                     const formattedContent = content
@@ -2610,21 +2287,18 @@ Important tips:
                         .replace(/\n/g, '<br>')
                         .replace(/^/, '<p>')
                         .replace(/$/, '</p>');
-                    // 🔥 XSS防护：即使是备用方案也要清理
-                    messageContent.innerHTML = typeof DOMPurify !== 'undefined'
-                        ? DOMPurify.sanitize(formattedContent)
-                        : formattedContent;
+                    messageContent.innerHTML = formattedContent;
                 }
-
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
-
-                await new Promise(resolve => setTimeout(resolve, CONFIG.TYPING_DELAY));
+                
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
                 messageContent.style.transition = 'opacity 0.6s ease-in';
                 messageContent.style.opacity = '1';
                 
             } else {
                 messageContent.textContent = content;
-                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+                chatContainer.scrollTop = chatContainer.scrollHeight;
             }
 
             return messageDiv;
@@ -2676,7 +2350,7 @@ Important tips:
             }
 
             chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
 
             return messageDiv;
         }
@@ -2697,7 +2371,7 @@ Important tips:
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(loading);
             chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
 
             return 'loading-message';
         }
@@ -2720,16 +2394,12 @@ Important tips:
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                // 🔥 修复：检查按钮是否禁用，防止重复发送
-                if (!sendButton.disabled) {
-                    handleSendMessage();
-                }
+                handleSendMessage();
             }
         });
 
           init().catch(error => {
             console.error('App initialization failed:', error);
-            document.body.classList.add('loaded'); // 确保页面显示
             showLoginModal(); // 确保即使出错也显示登录框
         });
     </script>
