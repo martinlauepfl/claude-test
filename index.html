@@ -444,12 +444,6 @@
             box-shadow: 0 4px 15px rgba(251, 146, 60, 0.3);
         }
 
-        .send-button:hover:not(:disabled) {
-        }
-
-        .send-button:active:not(:disabled) {
-        }
-
         .send-button:disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -1140,7 +1134,7 @@
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <h2 class="modal-title" id="loginTitle">登录</h2>
-            <form id="loginForm" onsubmit="handleLogin(event)">
+            <form id="loginForm">
                 <div class="form-group">
                     <label class="form-label" id="loginEmailLabel">邮箱</label>
                     <input type="email" class="form-input" id="loginUsername" required>
@@ -1162,7 +1156,7 @@
     <div class="modal" id="registerModal">
         <div class="modal-content">
             <h2 class="modal-title" id="registerTitle">注册</h2>
-            <form id="registerForm" onsubmit="handleRegister(event)">
+            <form id="registerForm">
                 <div class="form-group">
                     <label class="form-label" id="registerEmailLabel">邮箱</label>
                     <input type="email" class="form-input" id="registerUsername" required>
@@ -1219,6 +1213,10 @@
             document.getElementById('registerFooterLink').addEventListener('click', showLoginModal);
             document.getElementById('paymentBtn').addEventListener('click', handlePayment);
             document.getElementById('paymentCancelBtn').addEventListener('click', closePaymentModal);
+
+            // 绑定表单提交事件
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
         });
 
         // 验证 marked 是否正确加载
@@ -1978,15 +1976,6 @@ Important tips:
                 quotaDisplay = userQuota.quota;  // 正常显示数字
             }
             document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quotaDisplay}`;
-        }
-
-        // 🔥 修复5：邮箱验证状态检查函数
-        function checkEmailVerification() {
-            if (currentUser && !currentUser.email_confirmed_at) {
-                document.getElementById('verificationBanner').style.display = 'block';
-            } else {
-                document.getElementById('verificationBanner').style.display = 'none';
-            }
         }
 
         function showLoginModal() {
