@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- SEO 基础标签 -->
-    <title>AI算命大师 - 在线AI智能算命,八字占卜,免费测运势 | 玄机阁</title>
+    <!-- SEO 基础标签 - 标题将由JS动态设置 -->
+    <title>Loading...</title>
     <meta name="description" content="玄机阁AI算命大师提供在线智能算命服务,基于AI大模型的专业八字占卜、运势预测、事业财运分析。免费体验,精准解读人生命理,24小时在线咨询。">
     <meta name="keywords" content="AI算命,在线算命,智能算命,八字算命,免费算命,运势测算,AI占卜,命理分析,玄机阁,fortune telling">
     <meta name="author" content="玄机阁 AI Fortune">
@@ -52,6 +52,12 @@
             position: relative;
             overflow: hidden;
             animation: breathe 8s ease-in-out infinite;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        body.loaded {
+            opacity: 1;
         }
 
         @keyframes breathe {
@@ -379,12 +385,13 @@
 
         .input-box {
             width: 100%;
-            min-height: 56px;
+            min-height: 48px;
             max-height: 200px;
-            padding: 16px 60px 16px 20px;
+            padding: 12px 60px 12px 20px;
             border: 2px solid rgba(251, 146, 60, 0.3);
             border-radius: 16px;
             font-size: 15px;
+            line-height: 24px;
             font-family: inherit;
             resize: none;
             outline: none;
@@ -407,17 +414,17 @@
             box-shadow: 0 0 0 4px rgba(251, 146, 60, 0.1), 0 8px 24px rgba(251, 146, 60, 0.15);
         }
 
-        /* 🔥🔥🔥 修复：发送按钮完美垂直居中 */
+        /* 🔥🔥🔥 修复：发送按钮固定在底部 */
         .send-button {
             position: absolute;
-            right: 12px;
-            bottom: 11.75px;
-            width: 40px;
-            height: 40px;
+            right: 8px;
+            bottom: 11.5px;
+            width: 36px;
+            height: 36px;
             z-index: 20;
             background: linear-gradient(135deg, #fb923c 0%, #f59e0b 100%);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -822,7 +829,8 @@
 
             .input-box {
                 font-size: 16px; /* 防止iOS缩放 */
-                padding-right: 60px !important;
+                padding-right: 48px !important;
+                min-height: 48px !important;
             }
 
             /* 消息气泡优化 */
@@ -879,13 +887,32 @@
                 position: relative;
             }
 
-            /* 发送按钮定位 */
-            .send-button {
-                position: absolute !important;
-                right: 12px !important;
-                bottom: 4px !important;
-                width: 40px !important;
-                height: 40px !important;
+            /* 移动端发送按钮，固定在底部 */
+            button.send-button {
+                width: 32px !important;
+                height: 32px !important;
+                right: 6px !important;
+                bottom: 13.5px !important;
+                border-radius: 8px !important;
+                min-width: 32px !important;
+                min-height: 32px !important;
+                max-width: 32px !important;
+                max-height: 32px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            button.send-button svg {
+                width: 18px !important;
+                height: 18px !important;
+                fill: white !important;
+                display: block !important;
+                flex-shrink: 0 !important;
+            }
+
+            button.send-button svg path {
+                fill: white !important;
             }
 
             /* 输入区域优化 */
@@ -1210,10 +1237,12 @@
         let conversationHistory = [];
         let userProfile = {};
         let currentLanguage = localStorage.getItem('language') || 'zh';
+        let isDeletingHistory = false;  // 🔥 删除历史记录的锁
 
         // 多语言配置
         const i18n = {
             zh: {
+                pageTitle: 'AI算命大师 - 在线AI智能算命,八字占卜,免费测运势 | 玄机阁',
                 appTitle: '🔮 玄机阁',
                 langToggle: 'EN',
                 clearBtn: '清空记录',
@@ -1255,9 +1284,10 @@
                 resendError: '发送失败:',
                 paymentSuccess: '支付成功!(模拟)\n实际使用时需要接入真实支付接口',
                 paymentError: '支付失败,请稍后重试',
-                apiError: '抱歉,天机不可泄露太多,请稍后再试...'
+                apiError: '算命失败了,可能是网络问题,请稍后再试'
             },
             en: {
+                pageTitle: 'AI Fortune Teller - Online Fortune Reading, Astrology & Divination | Free Trial',
                 appTitle: '🔮 Fortune Teller',
                 langToggle: '中文',
                 clearBtn: 'Clear History',
@@ -1299,7 +1329,7 @@
                 resendError: 'Sending failed: ',
                 paymentSuccess: 'Payment successful! (Mock)\nActual payment gateway needs to be integrated for production use',
                 paymentError: 'Payment failed, please try again later',
-                apiError: 'Sorry, the mystic forces are unavailable at the moment. Please try again later...'
+                apiError: 'Fortune reading failed, possibly network issue, please try again'
             }
         };
 
@@ -1319,7 +1349,7 @@
 
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const timeoutId = setTimeout(() => controller.abort(), 1500); // 🔥 缩短到1.5秒
 
                 const response = await fetch('https://ipapi.co/json/', {
                     signal: controller.signal
@@ -1337,7 +1367,7 @@
                 console.log('Detected country:', data.country_name, '- Language:', currentLanguage);
             } catch (error) {
                 console.log('IP detection failed, using browser language:', browserLang);
-                currentLanguage = isChinese ? 'zh' : 'zh';
+                currentLanguage = isChinese ? 'zh' : 'en';
             }
         }
 
@@ -1348,6 +1378,9 @@
         }
 
         function updateUILanguage() {
+            // 🔥 更新浏览器标签页标题
+            document.title = t('pageTitle');
+
             document.getElementById('appTitle').textContent = t('appTitle');
             document.getElementById('langToggle').textContent = t('langToggle');
             document.getElementById('clearBtn').textContent = t('clearBtn');
@@ -1441,6 +1474,8 @@
                                 hour >= 12 && hour < 18 ? 'afternoon' : 'evening';
 
                 return `You are an insightful fortune teller with a touch of sarcasm but genuine sincerity. You speak casually like a friend, but occasionally drop profound philosophical insights.
+
+🔥 CRITICAL: You MUST respond entirely in ENGLISH. Do NOT use Chinese or any other language.
 
 Current time: ${timeOfDay}
 
@@ -1608,6 +1643,9 @@ Important tips:
             updateUILanguage();
             console.log('UI language updated');
 
+            // 🔥 语言设置完成后显示页面
+            document.body.classList.add('loaded');
+
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
 
@@ -1758,18 +1796,30 @@ Important tips:
         }
 
         async function loadUserQuota() {
-            const { data, error } = await supabase
-                .from('user_quotas')
-                .select('*')
-                .eq('user_id', currentUser.id)
-                .single();
+            try {
+                const { data, error } = await supabase
+                    .from('user_quotas')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
 
-            if (error) {
+                if (error) throw error;
+
+                userQuota = data;
+            } catch (error) {
                 console.error('加载配额失败:', error);
-                return;
+                // 🔥 改进：设置为 null，配额显示改为 "--"
+                userQuota = null;
+                // 提示用户刷新页面
+                const errorMsg = currentLanguage === 'zh'
+                    ? '配额加载失败，请刷新页面重试'
+                    : 'Failed to load quota, please refresh the page';
+                setTimeout(() => {
+                    if (confirm(errorMsg + '\n\n' + (currentLanguage === 'zh' ? '是否立即刷新？' : 'Refresh now?'))) {
+                        location.reload();
+                    }
+                }, 1000);
             }
-
-            userQuota = data;
         }
 
         function showUserInfo() {
@@ -1803,8 +1853,14 @@ Important tips:
         }
 
         function updateQuotaBadge() {
-            const quota = userQuota ? userQuota.quota : 0;
-            document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quota}`;
+            // 🔥 改进：加载失败显示 "--"，而不是 0
+            let quotaDisplay;
+            if (!userQuota) {
+                quotaDisplay = '--';  // 加载失败
+            } else {
+                quotaDisplay = userQuota.quota;  // 正常显示数字
+            }
+            document.getElementById('quotaBadge').textContent = `${t('quotaBadge')}: ${quotaDisplay}`;
         }
 
         function showLoginModal() {
@@ -1943,26 +1999,40 @@ Important tips:
             const confirmed = confirm(t('confirmClearHistory'));
             if (!confirmed) return;
 
-            try {
-                const { error } = await supabase
-                    .from('chat_messages')
-                    .delete()
-                    .eq('user_id', currentUser.id);
+            // 🔥 设置删除锁，防止删除期间发送消息
+            isDeletingHistory = true;
+            sendButton.disabled = true;
+            userInput.disabled = true;
 
-                if (error) {
-                    console.error('清空记录失败:', error);
-                    alert(t('errorClearHistory'));
-                    return;
-                }
+            // 🔥 优化：立即清空前端，不等待后端
+            conversationHistory = [];
+            clearChatDisplay();
+            console.log('前端聊天记录已清空');
 
-                conversationHistory = [];
-                clearChatDisplay();
-
-                alert(t('successClearHistory'));
-            } catch (error) {
-                console.error('清空记录异常:', error);
-                alert(t('errorClearHistory'));
-            }
+            // 🔥 后台异步删除数据库记录（不阻塞用户）
+            supabase
+                .from('chat_messages')
+                .delete()
+                .eq('user_id', currentUser.id)
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('后台删除记录失败:', error);
+                        // 不弹窗打断用户，只在控制台记录
+                    } else {
+                        console.log('数据库记录已删除');
+                    }
+                })
+                .catch(error => {
+                    console.error('删除记录异常:', error);
+                })
+                .finally(() => {
+                    // 🔥 释放锁，允许发送新消息
+                    isDeletingHistory = false;
+                    sendButton.disabled = false;
+                    userInput.disabled = false;
+                    userInput.focus();
+                    console.log('可以开始新对话了');
+                });
         }
 
         async function logout() {
@@ -2035,7 +2105,18 @@ Important tips:
         }
 
         function checkQuota() {
-            if (!userQuota || userQuota.quota <= 0) {
+            // 🔥 改进：区分配额不足和加载失败
+            if (!userQuota) {
+                // 配额加载失败
+                const errorMsg = currentLanguage === 'zh'
+                    ? '配额信息加载失败，请刷新页面后重试'
+                    : 'Failed to load quota info, please refresh the page';
+                alert(errorMsg);
+                return false;
+            }
+
+            if (userQuota.quota <= 0) {
+                // 配额用完
                 showPaymentModal();
                 return false;
             }
@@ -2075,6 +2156,12 @@ Important tips:
         async function handleSendMessage() {
             if (!currentUser) {
                 showLoginModal();
+                return;
+            }
+
+            // 🔥 检查是否正在删除历史记录
+            if (isDeletingHistory) {
+                console.log('正在删除历史记录，请稍后...');
                 return;
             }
 
@@ -2123,7 +2210,10 @@ Important tips:
             const loadingId = addLoadingMessage();
 
             try {
+                // 🔥 修复: 先调用AI，成功后再扣除配额
+                console.log('调用AI API...');
                 const response = await callAPI();
+                console.log('AI调用成功，准备扣除配额...');
 
                 removeMessage(loadingId);
 
@@ -2135,30 +2225,38 @@ Important tips:
                     content: response
                 });
 
-                // 完全异步并行处理：保存消息、扣除配额、清理数组
+                // 🔥 AI成功后才扣除配额，必须等待扣除完成
+                try {
+                    await deductQuota();
+                    console.log('配额扣除成功，当前剩余:', userQuota.quota);
+                } catch (quotaError) {
+                    console.error('配额扣除失败（AI已返回）:', quotaError);
+                    // 配额扣除失败，但AI已经返回了，显示警告但不影响用户体验
+                    // 可以选择在后台重试或记录日志
+                }
+
+                // 异步保存消息和清理数组
                 Promise.all([
                     saveChatMessage('assistant', response),
-                    deductQuota(),
                     Promise.resolve().then(() => {
                         if (conversationHistory.length > 50) {
                             conversationHistory = conversationHistory.slice(-50);
                         }
                     })
-                ]).then(() => {
-                    // 确保配额显示更新
-                    updateQuotaBadge();
-                }).catch(err => {
+                ]).catch(err => {
                     console.warn('后台处理失败:', err);
                 });
             } catch (error) {
                 removeMessage(loadingId);
+
+                // API调用失败，不扣除配额
+                console.error('API调用失败，不扣除配额:', error);
                 const errorMsg = t('apiError');
                 conversationHistory.push({
                     role: 'assistant',
                     content: errorMsg
                 });
                 addMessageWithTyping(errorMsg, 'assistant');
-                console.error('API调用失败:', error);
                 console.error('错误详情:', error.message);
                 console.error('错误堆栈:', error.stack);
                 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.startsWith('192.168.')) {
@@ -2172,18 +2270,30 @@ Important tips:
         }
 
         async function callAPI() {
+            console.log('===== API调用信息 =====');
+            console.log('当前语言 / Current Language:', currentLanguage);
+            console.log('界面语言按钮显示:', document.getElementById('langToggle').textContent);
             let systemPrompt = getSystemPrompt();
+            console.log('System Prompt 前100字符:', systemPrompt.substring(0, 100));
 
             if (Object.keys(userProfile).length > 0) {
-                systemPrompt += '\n\n用户信息(请记住并在合适时自然提及):\n';
+                const userInfoHeader = currentLanguage === 'zh'
+                    ? '\n\n用户信息(请记住并在合适时自然提及):\n'
+                    : '\n\nUser Information (remember and mention naturally when appropriate):\n';
+
+                systemPrompt += userInfoHeader;
+
                 if (userProfile.name) {
-                    systemPrompt += `- 姓名:${userProfile.name}\n`;
+                    const nameLabel = currentLanguage === 'zh' ? '姓名' : 'Name';
+                    systemPrompt += `- ${nameLabel}: ${userProfile.name}\n`;
                 }
                 if (userProfile.birthday) {
-                    systemPrompt += `- 生日:${userProfile.birthday}\n`;
+                    const birthdayLabel = currentLanguage === 'zh' ? '生日' : 'Birthday';
+                    systemPrompt += `- ${birthdayLabel}: ${userProfile.birthday}\n`;
                 }
                 if (userProfile.zodiac) {
-                    systemPrompt += `- 星座:${userProfile.zodiac}\n`;
+                    const zodiacLabel = currentLanguage === 'zh' ? '星座' : 'Zodiac';
+                    systemPrompt += `- ${zodiacLabel}: ${userProfile.zodiac}\n`;
                 }
             }
 
@@ -2198,17 +2308,40 @@ Important tips:
                 ...recentMessages
             ];
 
-            const response = await fetch(WORKER_API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'apikey': SUPABASE_KEY,
-                    'Authorization': `Bearer ${SUPABASE_KEY}`
-                },
-                body: JSON.stringify({
-                    messages: messages
-                })
+            const requestBody = {
+                messages: messages,
+                language: currentLanguage  // 🔥 传递当前语言
+            };
+
+            console.log('发送给Edge Function的数据:', {
+                language: requestBody.language,
+                messageCount: requestBody.messages.length
             });
+
+            // 🔥 修复：添加超时控制（30秒）
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+            let response;
+            try {
+                response = await fetch(WORKER_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal  // 🔥 添加超时信号
+                });
+                clearTimeout(timeoutId);
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('请求超时，请检查网络连接');
+                }
+                throw error;
+            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -2400,12 +2533,16 @@ Important tips:
         userInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSendMessage();
+                // 🔥 修复：检查按钮是否禁用，防止重复发送
+                if (!sendButton.disabled) {
+                    handleSendMessage();
+                }
             }
         });
 
           init().catch(error => {
             console.error('App initialization failed:', error);
+            document.body.classList.add('loaded'); // 确保页面显示
             showLoginModal(); // 确保即使出错也显示登录框
         });
     </script>
