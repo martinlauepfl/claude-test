@@ -2295,10 +2295,15 @@ Important tips:
         }
 
         userInput.addEventListener('input', function() {
+            // 🔥 修复：暂时禁用 transition，避免高度计算时的闪烁
+            this.style.transition = 'none';
             this.style.height = 'auto';
-            // 🔥 修复：确保最小高度 48px，防止输入时高度突变
+            // 确保最小高度 48px
             const newHeight = Math.max(48, Math.min(this.scrollHeight, 200));
             this.style.height = newHeight + 'px';
+            // 强制重绘后恢复 transition
+            void this.offsetHeight; // 触发重绘
+            this.style.transition = 'all 0.3s ease';
         });
 
         async function handleSendMessage() {
