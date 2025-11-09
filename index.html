@@ -2296,7 +2296,9 @@ Important tips:
 
         userInput.addEventListener('input', function() {
             this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+            // 🔥 修复：确保最小高度 48px，防止输入时高度突变
+            const newHeight = Math.max(48, Math.min(this.scrollHeight, 200));
+            this.style.height = newHeight + 'px';
         });
 
         async function handleSendMessage() {
