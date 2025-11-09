@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试RPC配额扣除</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #2563eb;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
+        .success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status.disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 RPC配额扣除测试工具</h1>
+
+        <div class="test-section">
+            <h3>1. 登录状态 <span id="loginStatus" class="status disconnected">未登录</span></h3>
+            <input type="email" id="email" placeholder="输入邮箱">
+            <input type="password" id="password" placeholder="输入密码">
+            <button onclick="testLogin()">登录</button>
+            <div id="loginResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. 查看当前配额</h3>
+            <button onclick="checkQuota()">查看配额</button>
+            <div id="quotaResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 测试RPC扣除配额（单次）</h3>
+            <button onclick="testDeductOnce()">扣除1次配额</button>
+            <div id="deductResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 压力测试（模拟多标签页并发）</h3>
+            <p>同时发送5个扣除请求，测试RPC是否能正确处理并发</p>
+            <button onclick="testConcurrent()">开始压力测试</button>
+            <div id="concurrentResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. 手动增加配额（用于测试）</h3>
+            <input type="number" id="addQuotaAmount" placeholder="增加数量" value="10">
+            <button onclick="addQuota()">增加配额</button>
+            <div id="addQuotaResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im11bHJreXFxaGF1c3Rib2p6emVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3NTAzNDYsImV4cCI6MjA3NjMyNjM0Nn0.IP0h8Ps8CSloKNvsE8yItTOE4zdVLf36zLnsgm18uhc';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('loginResult');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+                document.getElementById('loginStatus').textContent = '已登录';
+                document.getElementById('loginStatus').className = 'status connected';
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 登录成功！\n用户ID: ${currentUser.id}\n邮箱: ${currentUser.email}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 登录失败: ${error.message}`;
+            }
+        }
+
+        async function checkQuota() {
+            const resultDiv = document.getElementById('quotaResult');
+
+            if (!currentUser) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录';
+                return;
+            }
+
+            try {
+                const { data, error } = await supabase
+                    .from('user_quotas')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                if (error) throw error;
+
+                resultDiv.className = 'result info';
+                resultDiv.textContent = `📊 当前配额信息：\n配额: ${data.quota}\n更新时间: ${data.updated_at}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 查询失败: ${error.message}`;
+            }
+        }
+
+        async function testDeductOnce() {
+            const resultDiv = document.getElementById('deductResult');
+
+            if (!currentUser) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录';
+                return;
+            }
+
+            try {
+                console.log('调用RPC函数 deduct_user_quota...');
+                const startTime = Date.now();
+
+                const { data, error } = await supabase
+                    .rpc('deduct_user_quota', {
+                        user_id_param: currentUser.id
+                    });
+
+                const duration = Date.now() - startTime;
+
+                if (error) throw error;
+
+                const result = data[0];
+
+                if (!result.success) {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ 扣除失败: ${result.message}`;
+                    return;
+                }
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ RPC调用成功！\n扣除结果: ${result.message}\n剩余配额: ${result.remaining_quota}\n耗时: ${duration}ms`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ RPC调用失败: ${error.message}`;
+            }
+        }
+
+        async function testConcurrent() {
+            const resultDiv = document.getElementById('concurrentResult');
+
+            if (!currentUser) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录';
+                return;
+            }
+
+            try {
+                // 先查看初始配额
+                const { data: quotaBefore } = await supabase
+                    .from('user_quotas')
+                    .select('quota')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                const initialQuota = quotaBefore.quota;
+
+                resultDiv.className = 'result info';
+                resultDiv.textContent = `⏳ 开始并发测试...\n初始配额: ${initialQuota}\n同时发送5个扣除请求...`;
+
+                // 同时发送5个扣除请求
+                const startTime = Date.now();
+                const promises = Array(5).fill().map(() =>
+                    supabase.rpc('deduct_user_quota', {
+                        user_id_param: currentUser.id
+                    })
+                );
+
+                const results = await Promise.all(promises);
+                const duration = Date.now() - startTime;
+
+                // 检查最终配额
+                const { data: quotaAfter } = await supabase
+                    .from('user_quotas')
+                    .select('quota')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                const finalQuota = quotaAfter.quota;
+                const actualDeducted = initialQuota - finalQuota;
+                const expectedDeducted = 5;
+
+                let output = `📊 并发测试结果：\n`;
+                output += `初始配额: ${initialQuota}\n`;
+                output += `最终配额: ${finalQuota}\n`;
+                output += `实际扣除: ${actualDeducted}\n`;
+                output += `期望扣除: ${expectedDeducted}\n`;
+                output += `总耗时: ${duration}ms\n\n`;
+
+                if (actualDeducted === expectedDeducted) {
+                    output += `✅ 测试通过！RPC正确处理了并发请求，配额准确扣除${expectedDeducted}次`;
+                    resultDiv.className = 'result success';
+                } else {
+                    output += `❌ 测试失败！配额扣除不准确，可能存在竞态条件`;
+                    resultDiv.className = 'result error';
+                }
+
+                resultDiv.textContent = output;
+
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 测试失败: ${error.message}`;
+            }
+        }
+
+        async function addQuota() {
+            const resultDiv = document.getElementById('addQuotaResult');
+            const amount = parseInt(document.getElementById('addQuotaAmount').value);
+
+            if (!currentUser) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '❌ 请先登录';
+                return;
+            }
+
+            try {
+                // 先获取当前配额
+                const { data: current } = await supabase
+                    .from('user_quotas')
+                    .select('quota')
+                    .eq('user_id', currentUser.id)
+                    .single();
+
+                const newQuota = current.quota + amount;
+
+                // 更新配额
+                const { error } = await supabase
+                    .from('user_quotas')
+                    .update({ quota: newQuota })
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ 配额增加成功！\n原配额: ${current.quota}\n新配额: ${newQuota}\n增加了: ${amount}`;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ 增加失败: ${error.message}`;
+            }
+        }
+
+        // 自动检测登录状态
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                currentUser = session.user;
+                document.getElementById('loginStatus').textContent = '已登录';
+                document.getElementById('loginStatus').className = 'status connected';
+                document.getElementById('email').value = session.user.email;
+            }
+        });
+    </script>
+</body>
+</html>
