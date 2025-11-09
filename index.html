@@ -1305,6 +1305,7 @@
                 welcomeTitle: '命运如何,且让我为你测算',
                 welcomeDesc: '周易八卦,紫微斗数,占往知来',
                 inputPlaceholder: '说说你的困惑,我为你指点迷津...',
+                inputPlaceholderMobile: '说说你的困惑...',
                 loginTitle: '登录',
                 loginEmailLabel: '邮箱',
                 loginPasswordLabel: '密码',
@@ -1350,6 +1351,7 @@
                 welcomeTitle: 'Let me read your fortune',
                 welcomeDesc: 'Ancient wisdom meets modern AI',
                 inputPlaceholder: 'Share your questions, let me guide you...',
+                inputPlaceholderMobile: 'Ask me anything...',
                 loginTitle: 'Login',
                 loginEmailLabel: 'Email',
                 loginPasswordLabel: 'Password',
@@ -1445,7 +1447,10 @@
             if (welcomeTitle) welcomeTitle.textContent = t('welcomeTitle');
             if (welcomeDesc) welcomeDesc.textContent = t('welcomeDesc');
 
-            document.getElementById('userInput').placeholder = t('inputPlaceholder');
+            // 🔥 根据屏幕宽度设置 placeholder（移动端使用短文本）
+            const isMobile = window.innerWidth <= 768;
+            const placeholderKey = isMobile ? 'inputPlaceholderMobile' : 'inputPlaceholder';
+            document.getElementById('userInput').placeholder = t(placeholderKey);
             document.getElementById('loginTitle').textContent = t('loginTitle');
             document.getElementById('loginEmailLabel').textContent = t('loginEmailLabel');
             document.getElementById('loginPasswordLabel').textContent = t('loginPasswordLabel');
@@ -1793,6 +1798,13 @@ Important tips:
                     conversationHistory = [];
                     clearChatDisplay();
                 }
+            });
+
+            // 🔥 监听窗口大小变化，动态更新 placeholder
+            window.addEventListener('resize', function() {
+                const isMobile = window.innerWidth <= 768;
+                const placeholderKey = isMobile ? 'inputPlaceholderMobile' : 'inputPlaceholder';
+                document.getElementById('userInput').placeholder = t(placeholderKey);
             });
         }
 
