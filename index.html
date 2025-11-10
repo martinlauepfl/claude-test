@@ -718,6 +718,12 @@
             border-radius: 8px;
         }
 
+        .error-message:empty {
+            display: none;
+            padding: 0;
+            margin: 0;
+        }
+
         .success-message {
             color: #86efac;
             font-size: 14px;
@@ -874,6 +880,9 @@
             .input-box {
                 font-size: 16px; /* 防止iOS缩放 */
                 padding-right: 70px !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                -webkit-appearance: none;
+                appearance: none;
             }
 
             /* 消息气泡优化 */
@@ -909,17 +918,9 @@
                 font-size: 15px;
             }
 
-            /* 🔥🔥🔥 移动端输入区域固定 + 发送按钮垂直居中修复 */
+            /* 🔥🔥🔥 移动端输入区域padding调整 */
             .input-area {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background: rgba(255, 255, 255, 0.1);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
                 padding: max(16px, env(safe-area-inset-bottom) + 8px) 16px 16px 16px;
-                border-top: 1px solid rgba(255, 255, 255, 0.2);
             }
 
             .input-container {
@@ -1213,6 +1214,11 @@
             // 获取DOM元素
             userInput = document.getElementById('userInput');
             sendButton = document.getElementById('sendButton');
+
+            // 更新语言（确保输入框placeholder正确）
+            if (currentLanguage) {
+                updateUILanguage();
+            }
 
             // 输入框自动调整高度
             if (userInput) {
