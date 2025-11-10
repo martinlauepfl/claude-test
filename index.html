@@ -1220,6 +1220,25 @@
                     this.style.height = 'auto';
                     this.style.height = Math.min(this.scrollHeight, 200) + 'px';
                 });
+
+                // Enter键发送消息
+                userInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                    }
+                });
+            }
+
+            // 发送按钮点击事件
+            if (sendButton) {
+                sendButton.addEventListener('click', handleSendMessage);
+
+                // 添加触摸事件支持，解决移动端点击无响应问题
+                sendButton.addEventListener('touchend', function(e) {
+                    e.preventDefault(); // 防止事件冒泡
+                    handleSendMessage();
+                });
             }
         });
 
@@ -1402,39 +1421,41 @@
         }
 
         function updateUILanguage() {
-            document.getElementById('appTitle').textContent = t('appTitle');
-            document.getElementById('langToggle').textContent = t('langToggle');
-            document.getElementById('clearBtn').textContent = t('clearBtn');
-            document.getElementById('logoutBtn').textContent = t('logoutBtn');
-            document.getElementById('verifyTitle').innerHTML = t('verifyTitle');
-            document.getElementById('verifyText').textContent = t('verifyText');
-            document.getElementById('resendLink').textContent = t('resendLink');
+            // 安全地更新元素
+            const safeUpdate = (id, property, value) => {
+                const el = document.getElementById(id);
+                if (el) el[property] = value;
+            };
 
-            const welcomeTitle = document.getElementById('welcomeTitle');
-            const welcomeDesc = document.getElementById('welcomeDesc');
-            if (welcomeTitle) welcomeTitle.textContent = t('welcomeTitle');
-            if (welcomeDesc) welcomeDesc.textContent = t('welcomeDesc');
-
-            document.getElementById('userInput').placeholder = t('inputPlaceholder');
-            document.getElementById('loginTitle').textContent = t('loginTitle');
-            document.getElementById('loginEmailLabel').textContent = t('loginEmailLabel');
-            document.getElementById('loginPasswordLabel').textContent = t('loginPasswordLabel');
-            document.getElementById('loginSubmitBtn').textContent = t('loginSubmitBtn');
-            document.getElementById('loginFooterText').textContent = t('loginFooterText');
-            document.getElementById('loginFooterLink').textContent = t('loginFooterLink');
-            document.getElementById('registerTitle').textContent = t('registerTitle');
-            document.getElementById('registerEmailLabel').textContent = t('registerEmailLabel');
-            document.getElementById('registerPasswordLabel').textContent = t('registerPasswordLabel');
-            document.getElementById('registerConfirmLabel').textContent = t('registerConfirmLabel');
-            document.getElementById('registerSubmitBtn').textContent = t('registerSubmitBtn');
-            document.getElementById('registerFooterText').textContent = t('registerFooterText');
-            document.getElementById('registerFooterLink').textContent = t('registerFooterLink');
-            document.getElementById('paymentTitle').textContent = t('paymentTitle');
-            document.getElementById('paymentDesc1').textContent = t('paymentDesc1');
-            document.getElementById('paymentDesc2').textContent = t('paymentDesc2');
-            document.getElementById('paymentBtn').textContent = t('paymentBtn');
-            document.getElementById('paymentCancelBtn').textContent = t('paymentCancelBtn');
-            document.getElementById('paymentPrice').innerHTML = currentLanguage === 'zh' ? '<small>¥</small>9.99' : '<small>$</small>2.99';
+            safeUpdate('appTitle', 'textContent', t('appTitle'));
+            safeUpdate('langToggle', 'textContent', t('langToggle'));
+            safeUpdate('clearBtn', 'textContent', t('clearBtn'));
+            safeUpdate('logoutBtn', 'textContent', t('logoutBtn'));
+            safeUpdate('verifyTitle', 'innerHTML', t('verifyTitle'));
+            safeUpdate('verifyText', 'textContent', t('verifyText'));
+            safeUpdate('resendLink', 'textContent', t('resendLink'));
+            safeUpdate('welcomeTitle', 'textContent', t('welcomeTitle'));
+            safeUpdate('welcomeDesc', 'textContent', t('welcomeDesc'));
+            safeUpdate('userInput', 'placeholder', t('inputPlaceholder'));
+            safeUpdate('loginTitle', 'textContent', t('loginTitle'));
+            safeUpdate('loginEmailLabel', 'textContent', t('loginEmailLabel'));
+            safeUpdate('loginPasswordLabel', 'textContent', t('loginPasswordLabel'));
+            safeUpdate('loginSubmitBtn', 'textContent', t('loginSubmitBtn'));
+            safeUpdate('loginFooterText', 'textContent', t('loginFooterText'));
+            safeUpdate('loginFooterLink', 'textContent', t('loginFooterLink'));
+            safeUpdate('registerTitle', 'textContent', t('registerTitle'));
+            safeUpdate('registerEmailLabel', 'textContent', t('registerEmailLabel'));
+            safeUpdate('registerPasswordLabel', 'textContent', t('registerPasswordLabel'));
+            safeUpdate('registerConfirmLabel', 'textContent', t('registerConfirmLabel'));
+            safeUpdate('registerSubmitBtn', 'textContent', t('registerSubmitBtn'));
+            safeUpdate('registerFooterText', 'textContent', t('registerFooterText'));
+            safeUpdate('registerFooterLink', 'textContent', t('registerFooterLink'));
+            safeUpdate('paymentTitle', 'textContent', t('paymentTitle'));
+            safeUpdate('paymentDesc1', 'textContent', t('paymentDesc1'));
+            safeUpdate('paymentDesc2', 'textContent', t('paymentDesc2'));
+            safeUpdate('paymentBtn', 'textContent', t('paymentBtn'));
+            safeUpdate('paymentCancelBtn', 'textContent', t('paymentCancelBtn'));
+            safeUpdate('paymentPrice', 'innerHTML', currentLanguage === 'zh' ? '<small>¥</small>9.99' : '<small>$</small>2.99');
 
             updateQuotaBadge();
             document.documentElement.lang = currentLanguage === 'zh' ? 'zh-CN' : 'en';
@@ -2443,21 +2464,6 @@ Important tips:
                 element.remove();
             }
         }
-
-        sendButton.addEventListener('click', handleSendMessage);
-
-        // 添加触摸事件支持，解决移动端点击无响应问题
-        sendButton.addEventListener('touchend', function(e) {
-            e.preventDefault(); // 防止事件冒泡
-            handleSendMessage();
-        });
-
-        userInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-            }
-        });
 
           init().catch(error => {
             console.error('App initialization failed:', error);
