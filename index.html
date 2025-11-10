@@ -1205,8 +1205,22 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         // 检查页面加载状态
+        let userInput, sendButton;
+
         window.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded');
+
+            // 获取DOM元素
+            userInput = document.getElementById('userInput');
+            sendButton = document.getElementById('sendButton');
+
+            // 输入框自动调整高度
+            if (userInput) {
+                userInput.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 200) + 'px';
+                });
+            }
         });
 
         // 验证 marked 是否正确加载
@@ -1225,8 +1239,6 @@
         const WORKER_API_URL = 'https://mulrkyqqhaustbojzzes.supabase.co/functions/v1/ai-chat-with-rag';
 
         const chatContainer = document.getElementById('chatContainer');
-        const userInput = document.getElementById('userInput');
-        const sendButton = document.getElementById('sendButton');
 
         // Supabase 配置
         const SUPABASE_URL = 'https://mulrkyqqhaustbojzzes.supabase.co';
@@ -2114,11 +2126,6 @@ Important tips:
             userQuota.quota = newQuota;
             updateQuotaBadge();
         }
-
-        userInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 200) + 'px';
-        });
 
         async function handleSendMessage() {
             if (!currentUser) {
