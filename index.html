@@ -1,11 +1,24 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" id="htmlRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- 立即设置语言，避免闪烁 -->
+    <script>
+        (function() {
+            const savedLang = localStorage.getItem('language');
+            if (savedLang) {
+                // 如果有保存的语言，直接使用（回访用户可以快速显示）
+                document.documentElement.lang = savedLang === 'zh' ? 'zh-CN' : 'en';
+                document.title = savedLang === 'zh' ? 'AI算命大师' : 'AI Fortune Teller';
+            }
+            // 无论是否有保存的语言，都显示loading，等待语言检测完成
+        })();
+    </script>
+
     <!-- SEO 基础标签 -->
-    <title>AI算命大师 - 在线AI智能算命,八字占卜,免费测运势 | 玄机阁</title>
+    <title>Loading...</title>
     <meta name="description" content="玄机阁AI算命大师提供在线智能算命服务,基于AI大模型的专业八字占卜、运势预测、事业财运分析。免费体验,精准解读人生命理,24小时在线咨询。">
     <meta name="keywords" content="AI算命,在线算命,智能算命,八字算命,免费算命,运势测算,AI占卜,命理分析,玄机阁,fortune telling">
     <meta name="author" content="玄机阁 AI Fortune">
@@ -52,6 +65,49 @@
             position: relative;
             overflow: hidden;
             animation: breathe 8s ease-in-out infinite;
+        }
+
+        /* Loading屏幕 */
+        .app-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1a1410 0%, #2d1810 25%, #3d1f15 50%, #4a2618 75%, #5c2f1a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease;
+        }
+
+        .app-loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(251, 146, 60, 0.2);
+            border-top-color: #fb923c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .app-content {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .app-content.visible {
+            opacity: 1;
         }
 
         @keyframes breathe {
@@ -815,7 +871,7 @@
 
             .input-box {
                 font-size: 16px; /* 防止iOS缩放 */
-                padding-right: 60px !important;
+                padding-right: 70px !important;
             }
 
             /* 消息气泡优化 */
@@ -876,7 +932,7 @@
             .send-button {
                 position: absolute !important;
                 right: 12px !important;
-                bottom: 9px !important;
+                bottom: 9.5px !important;
                 width: 40px !important;
                 height: 40px !important;
             }
@@ -1050,6 +1106,13 @@
     </script>
 </head>
 <body>
+    <!-- Loading屏幕 -->
+    <div class="app-loading" id="appLoading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- 应用内容 -->
+    <div class="app-content" id="appContent">
     <div class="header">
         <h1 id="appTitle">🔮 玄机阁</h1>
         <div style="display: flex; align-items: center; gap: 12px;">
@@ -1202,7 +1265,7 @@
         let userQuota = null;
         let conversationHistory = [];
         let userProfile = {};
-        let currentLanguage = localStorage.getItem('language') || 'zh';
+        let currentLanguage = localStorage.getItem('language'); // null for first-time visitors
 
         // 多语言配置
         const i18n = {
@@ -1297,40 +1360,44 @@
         };
 
         function t(key) {
-            return i18n[currentLanguage][key] || key;
+            return i18n[currentLanguage || 'zh'][key] || key;
         }
 
         async function detectUserLanguage() {
             const savedLanguage = localStorage.getItem('language');
             if (savedLanguage) {
                 currentLanguage = savedLanguage;
+                console.log('🔍 Using saved language from localStorage:', savedLanguage);
                 return;
             }
 
             const browserLang = navigator.language || navigator.userLanguage;
             const isChinese = browserLang.toLowerCase().startsWith('zh');
+            console.log('🌐 Browser language:', browserLang, '| Is Chinese:', isChinese);
 
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-                const response = await fetch('https://ipapi.co/json/', {
+                console.log('🌍 Starting IP detection...');
+                const response = await fetch('https://api.country.is/', {
                     signal: controller.signal
                 });
                 clearTimeout(timeoutId);
 
                 const data = await response.json();
 
-                if (data.country_code === 'CN') {
+                if (data.country === 'CN') {
                     currentLanguage = 'zh';
                 } else {
                     currentLanguage = 'en';
                 }
 
-                console.log('Detected country:', data.country_name, '- Language:', currentLanguage);
+                console.log('✅ IP detection success | Country:', data.country, '| IP:', data.ip, '| Language:', currentLanguage);
             } catch (error) {
-                console.log('IP detection failed, using browser language:', browserLang);
+                console.log('❌ IP detection failed:', error.message, '| Fallback to browser language:', browserLang);
                 currentLanguage = isChinese ? 'zh' : 'en';
+                console.log('🔤 Final language:', currentLanguage);
             }
         }
 
@@ -1600,6 +1667,12 @@ Important tips:
             console.log('Language detected:', currentLanguage);
             updateUILanguage();
             console.log('UI language updated');
+
+            // 隐藏loading，显示内容
+            setTimeout(() => {
+                document.getElementById('appLoading').classList.add('hidden');
+                document.getElementById('appContent').classList.add('visible');
+            }, 100);
 
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
@@ -2402,5 +2475,6 @@ Important tips:
             showLoginModal(); // 确保即使出错也显示登录框
         });
     </script>
+    </div> <!-- 闭合 app-content -->
 </body>
 </html>
