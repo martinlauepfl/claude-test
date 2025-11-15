@@ -2280,7 +2280,8 @@ Important tips:
                     'Authorization': `Bearer ${SUPABASE_KEY}`
                 },
                 body: JSON.stringify({
-                    messages: messages
+                    messages: messages,
+                    language: currentLanguage
                 })
             });
 
@@ -2476,7 +2477,7 @@ Important tips:
             <textarea
                 class="input-box"
                 id="userInput"
-                placeholder="问我任何问题..."
+                placeholder=""
                 rows="1"
             ></textarea>
             <button class="send-button" id="sendButton">
